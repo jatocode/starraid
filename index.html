@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>OLLE</title>
+  </head>
+
+  <body>
+    <style>
+      body,html,canvas {
+        width:100%;
+        height:100%;
+        background-color: #000020;
+      }
+    </style>
+
+    <canvas id="star-canvas"></canvas>
+
+    <script type="text/javascript" src="js/pixi.min.js"></script>
+
+    <script type="text/javascript">
+
+      /*
+
+      HEJ TOBIAS!!
+      Här har du stjärnor!
+      MED KOMMENTARER!!
+
+      */
+
+      // Lite variabler man kan leka med
+      var starCount = 1000;
+
+      // Perspektivet bestämmer typ vilken brännvidd "kameran" har
+      var perspective = 3000;
+
+      // MaxZ är hur långt bort stjärnorna kan vara som mest
+      // Används även för att räkna ut skalning och alpha
+      var maxZ = 5000;
+      var stars = [];
+
+      // Hämta canvas-elementet så vi kan slänga in det till Pixi
+      var canvas = document.getElementById('star-canvas');
+      var width = canvas.offsetWidth;
+      var height = canvas.offsetHeight;
+
+      // 3d-beräkningen behöver en mittpunkt
+      var centerX = width / 2;
+      var centerY = height / 2;
+
+      // Genom att flytta vart mittpunkten är kan man fejka lite att man tittar
+      // åt olika håll
+      var driftAngle = 0;
+      var driftRadius = 100;
+
+      // här drar pixi igång, den kör antingen webgl eller 2d-canvas beroende på
+      // vad som finns tillgängligt. Nu för tiden funkar webgl överallt utom
+      // typ gammal explorer
+      var renderer = PIXI.autoDetectRenderer(width,height,{
+        view: canvas
+      });
+
+      renderer.backgroundColor = 0x000020;
+
+      // Pixi behöver en grundcontainer som renderaren kan utgå från
+      var stage = new PIXI.Container();
+
+      var speed = 30;
+
+      var style = {
+        fontFamily : 'Arial',
+        fontSize : '36px',
+        fontStyle : 'italic',
+        fontWeight : 'bold',
+        fill : '#F7EDCA',
+        stroke : '#4a1850',
+        strokeThickness : 5,
+        dropShadow : true,
+        dropShadowColor : '#000000',
+        dropShadowAngle : Math.PI / 6,
+        dropShadowDistance : 6,
+        wordWrap : true,
+        wordWrapWidth : 440
+      };
+
+        var dXText = new PIXI.Text('Dx: 0', style); 
+        dXText.x = 10;
+        dXText.y = 250;
+
+        var dYText = new PIXI.Text('Dy: 0', style); 
+        dYText.x = 10;
+        dYText.y = 300;
+
+      // Skapa en loader för att ladda in stjärntexturen
+      // En png med alpha
+      var loader = PIXI.loader;
+      loader.add('star','img/star.png');
+      loader.once('complete',function () {
+        // När loadern är klar skapas alla stjärnor
+        // Vi skapar Pixi-sprites och hänger på lite properties
+
+        var olle = new PIXI.Text("OLLE");
+        olle.x = stage.width/2;
+        olle.y = 50;
+        stage.addChild(olle);
+
+
+        var richText = new PIXI.Text('Olles stjärnraid',style);
+        richText.x = 400;
+        richText.y = 80;
+
+        stage.addChild(richText);
+        
+        var speedText= new PIXI.Text('Hastighet: ' + speed, style); 
+        speedText.x = 10;
+        speedText.y = 400;
+        stage.addChild(speedText);
+
+        var pointsText = new PIXI.Text('Poäng: ' + 42, style); 
+        pointsText.x = 10;
+        pointsText.y = 350;
+        stage.addChild(pointsText);
+
+        stage.addChild(dXText);
+        stage.addChild(dYText);
+
+
+        for(var i=0;i<starCount;i++){
+            var star = PIXI.Sprite.fromFrame('star');
+            // Centrera spritens ankarpunkt
+            star.anchor.x = 0.5;
+            star.anchor.y = 0.5;
+
+            // x y z för stjärnornas position i 3d (som sen ska projiceras till 2d)
+            // Slumpa ut positionen (i 3d då)
+            star.starX = -width / 2 + Math.random()*width;
+            star.starY = -height / 2 + Math.random()*height;
+            star.starZ = Math.random()*maxZ;
+
+            // Slumpa även ett skalvärde så att varje individuell stjärna
+            // får sin egen storlek
+            star.starScale = 0.2 + Math.random()*0.2;
+
+            // lägg till stjärnan till grundcontainer
+            stage.addChild(star);
+            stars.push(star);
+          }
+
+          // Update drar igång updateloopen
+          // nästa update triggas i sin tur av requestAnimationFrame
+          // som körs 60 gånger per sekund
+          update();
+
+      });
+
+      // dra igång loadern (och sen stjärnorna)
+      loader.load();
+
+      function update() {
+
+        // Räkna ut en ny mittpunkg baserad på skärmens mittpunkt
+        // För att få känslan av att åka runt och kolla lite
+        driftAngle+=0.04;
+        var driftCenterX = centerX + Math.cos(driftAngle)*driftRadius;
+        var driftCenterY = centerY + Math.sin(driftAngle)*driftRadius;
+
+
+        for(var index in stars) {
+          var star = stars[index];
+
+          // räkna ut ett skalvärde baserat på hur långt bort stjärnan är
+          var starScale = 1 - star.starZ / maxZ;
+
+          // Här är hela den magiska 3d-projektionsrutinen
+          // dela x och y med z och gångra med perspektiv
+          // samt utgå från en mittpunkt
+          star.x = driftCenterX + (star.starX / star.starZ) * perspective;
+          star.y = driftCenterY + (star.starY / star.starZ) * perspective;
+
+          // kör skalan i kubik för att inte stjärnorna långt bort ska bli
+          // för stora
+          star.scale.x = star.scale.y = starScale*starScale*star.starScale;
+          star.alpha = starScale;
+
+          // flytta fram varje stjärna 10 "rymdenheter"
+          // här kan man alltså ändra hastigheten på sin rymdfarkost
+          star.starZ -= speed;
+
+          if(star.starZ < 0) {
+            // om Z är mindre än noll har stjärnan passerat kameran
+            // då återanvänder vi den och slumpar ut en ny position längst bak
+            star.starZ = maxZ;
+            star.starX = -width / 2 + Math.random()*width;
+            star.starY = -height / 2 + Math.random()*height;
+          }
+        }
+
+        dXText.text = 'Dx:' + Math.round(driftCenterX);
+        dYText.text = 'Dy:' + Math.round(driftCenterY);
+
+        // se till att den här rutinen körs även nästa frame
+        requestAnimationFrame(update);
+
+        // rendera hela scenen med pixi
+        renderer.render(stage);
+      }
+
+    </script>
+
+  </body>
+</html>
