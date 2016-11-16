@@ -80,7 +80,7 @@ var speedText= new PIXI.Text('Hastighet: ' + speed, infoStyle);
 speedText.x = 10;
 speedText.y = 400;
 
-var infoText = new PIXI.Text('W/S = Öka/minska farten      Piltangenter = Styra', {fill:0xffffff, fontSize: 8, fontFamily: 'courier'} );
+var infoText = new PIXI.Text('W/S = Öka/minska farten\nA/D = Rotera\nPiltangenter = Styra', {fill:0xffffff, fontSize: 8, fontFamily: 'courier'} );
 infoText.anchor.x = 0.5;
 infoText.x = width/2;
 infoText.y = height - 40;
@@ -166,14 +166,15 @@ function update() {
 			star.offsety = Math.min(maxMove, star.offsety + 2);
 		}
 		
+		var roll_speed = 0.15/perspective;
 		if(roll_right) {
                     // Rotera varje stjärna baserat på antal roll
-		    starFieldRoll -= 0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		    starFieldRoll -= roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
 		    starContainer.rotation = starFieldRoll;
                 }
 		if(roll_left) {
                     // Rotera varje stjärna baserat på antal roll
-		    starFieldRoll += 0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		    starFieldRoll += roll_speed; //= Math.min(2*3.14, starFieldRoll + 0.1);
 		    starContainer.rotation = starFieldRoll;
                 }
 
