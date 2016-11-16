@@ -8,4 +8,5 @@ Planen är att det ska styras av analog joystick.
 ## Kontroller
 
 Piltangenter för att åka runt
-A,Z för att öka/minska farten
+W,S för att öka/minska farten
+A,D för att rolla
