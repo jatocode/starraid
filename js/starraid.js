@@ -38,6 +38,7 @@ var umove = false;
 var dmove = false;
 var roll_right = false;
 var roll_left = false;
+var starFieldRoll = 0;
 
 var style = {
 	fontFamily : 'Arial',
@@ -95,6 +96,17 @@ titleText.x = width/2;
 titleText.y = 0;
 
 var loader = PIXI.loader;
+var starContainer = new PIXI.Container();
+starContainer.pivot.x = width/2;
+starContainer.pivot.y = height/2;
+starContainer.x = width/2;
+starContainer.y = height/2;
+var graphics = new PIXI.Graphics();
+graphics.lineStyle(2, 0xFF0000);
+graphics.drawRect(width/2 - 150, height/2 -100, 300, 200);
+//starContainer.addChild(graphics);
+
+stage.addChild(starContainer);
 loader.add('star','img/star.png');
 loader.once('complete',function () {
 
@@ -123,7 +135,7 @@ loader.once('complete',function () {
 
 		star.starScale = 0.2 + Math.random()*0.2;
 
-		stage.addChild(star);
+		starContainer.addChild(star);
 		stars.push(star);
 	}
 
@@ -156,15 +168,13 @@ function update() {
 		
 		if(roll_right) {
                     // Rotera varje stjärna baserat på antal roll
-		    star.roll = Math.min(2*3.14, star.roll + 0.1);
-		    star.offsetx += Math.cos(star.roll) * 1 * maxZ/star.starZ;
-		    star.offsety += Math.sin(star.roll) * 1 * maxZ/star.starZ;
+		    starFieldRoll -= 0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		    starContainer.rotation = starFieldRoll;
                 }
 		if(roll_left) {
                     // Rotera varje stjärna baserat på antal roll
-		    star.roll = Math.max(0, star.roll - 0.1);
-		    star.offsetx += Math.cos(star.roll) * 20;
-		    star.offsety += Math.sin(star.roll) * 20;
+		    starFieldRoll += 0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		    starContainer.rotation = starFieldRoll;
                 }
 
 		// Här är hela den magiska 3d-projektionsrutinen
