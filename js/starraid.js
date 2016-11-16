@@ -1,10 +1,3 @@
-/*
-
-HEJ TOBIAS!!
-Här har du stjärnor!
-MED KOMMENTARER!!
-
-*/
 
 var starCount = 1000;
 
@@ -37,6 +30,7 @@ renderer.backgroundColor = 0x000020;
 var stage = new PIXI.Container();
 
 var speed = 30;
+var points = 0;
 
 var rmove = false;
 var lmove = false;
@@ -72,31 +66,38 @@ var infoStyle = {
 };
 
 var dXText = new PIXI.Text('Dx: 0', infoStyle); 
-dXText.x = 800;
+dXText.x = width - dXText.width;
 dXText.y = 400;
 
 var dYText = new PIXI.Text('Dy: 0', infoStyle); 
-dYText.x = 800;
+dYText.x = width - dYText.width;
 dYText.y = 425;
 
 var speedText= new PIXI.Text('Hastighet: ' + speed, infoStyle); 
 speedText.x = 10;
 speedText.y = 400;
 
+var infoText = new PIXI.Text('A/Z = Öka/minska farten      Piltangenter = Styra', {fill:0xffffff, fontSize: 8, fontFamily: 'courier'} );
+infoText.anchor.x = 0.5;
+infoText.x = width/2;
+infoText.y = height - 40;
+stage.addChild(infoText);
+
+var pointsText = new PIXI.Text('Poäng: ' + points, infoStyle); 
+pointsText.x = 10;
+pointsText.y = 425;
+
+var titleText = new PIXI.Text('Olles Stjärnraid', style);
+titleText.anchor.x = 0.5;
+titleText.x = width/2;
+titleText.y = 0;
+
 var loader = PIXI.loader;
 loader.add('star','img/star.png');
 loader.once('complete',function () {
 
-	var titleText = new PIXI.Text('Olles Stjärnraid', style);
-	titleText.x = 400;
-	titleText.y = 0;
 	stage.addChild(titleText);
-	
 	stage.addChild(speedText);
-
-	var pointsText = new PIXI.Text('Poäng: ' + 42, infoStyle); 
-	pointsText.x = 10;
-	pointsText.y = 425;
 	stage.addChild(pointsText);
 
 	stage.addChild(dXText);
@@ -163,7 +164,6 @@ loader.once('complete',function () {
 
 });
 
-// dra igång loadern (och sen stjärnorna)
 loader.load();
 
 function update() {
@@ -210,12 +210,14 @@ function update() {
 	dXText.text = 'Dx:' + star.offsetx;
 	dYText.text = 'Dy:' + star.offsety;
 	speedText.text = 'Hastighet: ' + speed;
+	pointsText.text = 'Poäng: ' + points;
 
 	requestAnimationFrame(update);
 
 	renderer.render(stage);
 }
 
+// From PIXI.js cat-example:
 function keyboard(keyCode) {
 	var key = {};
 	key.code = keyCode;
