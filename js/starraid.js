@@ -114,7 +114,7 @@ loader.once('complete',function () {
 		speed += 5;
 	};
 	slow.press = function() {
-		speed -= 5;
+		speed = Math.max(-15, speed -5);
 	};
 	left.press = function() {
 		lmove = true;
