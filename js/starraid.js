@@ -36,6 +36,8 @@ var rmove = false;
 var lmove = false;
 var umove = false;
 var dmove = false;
+var roll_right = false;
+var roll_left = false;
 
 var style = {
 	fontFamily : 'Arial',
@@ -77,7 +79,7 @@ var speedText= new PIXI.Text('Hastighet: ' + speed, infoStyle);
 speedText.x = 10;
 speedText.y = 400;
 
-var infoText = new PIXI.Text('A/Z = Öka/minska farten      Piltangenter = Styra', {fill:0xffffff, fontSize: 8, fontFamily: 'courier'} );
+var infoText = new PIXI.Text('W/S = Öka/minska farten      Piltangenter = Styra', {fill:0xffffff, fontSize: 8, fontFamily: 'courier'} );
 infoText.anchor.x = 0.5;
 infoText.x = width/2;
 infoText.y = height - 40;
@@ -103,44 +105,8 @@ loader.once('complete',function () {
 	stage.addChild(dXText);
 	stage.addChild(dYText);
 
-	//Capture the keyboard arrow keys
-	var left = keyboard(37),
-	up = keyboard(38),
-	right = keyboard(39),
-	down = keyboard(40),
-	fast = keyboard(65), // a
-	slow = keyboard(90); // z
+        initControl();
 
-	fast.press = function() {
-		speed += 5;
-	};
-	slow.press = function() {
-		speed = Math.max(-15, speed -5);
-	};
-	left.press = function() {
-		lmove = true;
-	}
-	left.release = function() {
-		lmove = false;
-	}
-	right.press = function() {
-		rmove = true;
-	}
-	right.release = function() {
-		rmove = false;
-	}
-	up.press = function() {
-		umove = true;
-	}
-	up.release = function() {
-		umove = false;
-	}
-	down.press = function() {
-		dmove = true;
-	}
-	down.release = function() {
-		dmove = false;
-	}
 	for(var i=0;i<starCount;i++){
 		var star = PIXI.Sprite.fromFrame('star');
 		star.anchor.x = 0.5;
@@ -186,6 +152,11 @@ function update() {
 		if(dmove) {
 			star.offsety = Math.min(maxMove, star.offsety + 2);
 		}
+		
+		if(roll_right) {
+		//    star.offsetx += Math.cos(0.01) * 20;
+		//    star.offsety += Math.sin(0.01) * 20;
+                }
 
 		// Här är hela den magiska 3d-projektionsrutinen
 		// dela x och y med z och gångra med perspektiv
@@ -215,6 +186,69 @@ function update() {
 	requestAnimationFrame(update);
 
 	renderer.render(stage);
+
+}
+
+function initControl() {
+
+	var left = keyboard(37),
+	up = keyboard(38),
+	right = keyboard(39),
+	down = keyboard(40),
+	fast = keyboard(87), // w
+	slow = keyboard(83), // d
+	rollr = keyboard(65), // a
+        rolll = keyboard(68); // d
+
+	// Speed
+	fast.press = function() {
+		speed += 5;
+	};
+	slow.press = function() {
+		speed = Math.max(-15, speed -5);
+	};
+
+	// Left and right
+	left.press = function() {
+		lmove = true;
+	}
+	left.release = function() {
+		lmove = false;
+	}
+	right.press = function() {
+		rmove = true;
+	}
+	right.release = function() {
+		rmove = false;
+	}
+
+	// Up and down
+	up.press = function() {
+		umove = true;
+	}
+	up.release = function() {
+		umove = false;
+	}
+	down.press = function() {
+		dmove = true;
+	}
+	down.release = function() {
+		dmove = false;
+	}
+
+	// Roll
+	rollr.press = function() {
+		roll_right = true;
+	}
+	rollr.release = function() {
+		roll_right = false;
+	}
+	rolll.press = function() {
+		roll_left = true;
+	}
+	rolll.release = function() {
+		roll_left = false;
+        }	
 }
 
 // From PIXI.js cat-example:
