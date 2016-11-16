@@ -119,6 +119,7 @@ loader.once('complete',function () {
 		star.starZ = Math.random()*maxZ;
 		star.offsetx = 0;
 		star.offsety = 0;
+		star.roll = 0;
 
 		star.starScale = 0.2 + Math.random()*0.2;
 
@@ -154,8 +155,16 @@ function update() {
 		}
 		
 		if(roll_right) {
-		//    star.offsetx += Math.cos(0.01) * 20;
-		//    star.offsety += Math.sin(0.01) * 20;
+                    // Rotera varje stjärna baserat på antal roll
+		    star.roll = Math.min(2*3.14, star.roll + 0.1);
+		    star.offsetx += Math.cos(star.roll) * 1 * maxZ/star.starZ;
+		    star.offsety += Math.sin(star.roll) * 1 * maxZ/star.starZ;
+                }
+		if(roll_left) {
+                    // Rotera varje stjärna baserat på antal roll
+		    star.roll = Math.max(0, star.roll - 0.1);
+		    star.offsetx += Math.cos(star.roll) * 20;
+		    star.offsety += Math.sin(star.roll) * 20;
                 }
 
 		// Här är hela den magiska 3d-projektionsrutinen
