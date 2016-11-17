@@ -178,6 +178,8 @@ loader.load();
 
 function update() {
 
+	var joystick = pollGamepad();
+
 	for(var index in stars) {
 		var star = stars[index];
 
@@ -190,17 +192,16 @@ function update() {
 			points = 0;
 			speed = 30;
 		}
+		
+		star.offsetx += joystick[0] * move_speed;
+		star.offsetx += moveX * move_speed;
+		star.offsetx = Math.min(maxMove, star.offsetx);
+		star.offsetx = Math.max(-maxMove, star.offsetx);
 
-		if(moveX != 0) {
-			star.offsetx += moveX * move_speed;
-			star.offsetx = Math.min(maxMove, star.offsetx);
-			star.offsetx = Math.max(-maxMove, star.offsetx);
-		} 
-		if(moveY != 0) {
-			star.offsety += moveY * move_speed;
-			star.offsety = Math.min(maxMove, star.offsety);
-			star.offsety = Math.max(-maxMove, star.offsety);
-		} 
+		star.offsety += joystick[1] * move_speed;
+		star.offsety += moveY * move_speed;
+		star.offsety = Math.min(maxMove, star.offsety);
+		star.offsety = Math.max(-maxMove, star.offsety);
 		
 		var roll_speed = 0.15/perspective;
 		if(roll_dir != 0) {
@@ -256,6 +257,35 @@ function update() {
 
 	renderer.render(stage);
 
+}
+
+function pollGamepad() {
+	var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
+	if (!gamepads) {
+		console.log('No joystick connected');
+		return [0,0];
+	}
+
+	var gp = gamepads[0];
+
+	if(!gp) {
+		return [0,0];
+	}
+	if (buttonPressed(gp.buttons[0])) {
+		console.log('button 0');
+	} else if (buttonPressed(gp.buttons[2])) {
+		console.log('button 2');
+	}
+	if (buttonPressed(gp.buttons[1])) {
+		console.log('button 1');
+	} else if (buttonPressed(gp.buttons[3])) {
+		console.log('button 3');
+	}
+
+	var x = Math.floor(gp.axes[0]);
+	var y = Math.floor(gp.axes[1]);
+
+	return [x,y];
 }
 
 function initControl() {
@@ -340,3 +370,12 @@ function keyboard(keyCode) {
 	);
 	return key;
 } 
+
+// Helpers
+function buttonPressed(b) {
+  if (typeof(b) == "object") {
+    return b.pressed;
+  }
+  return b == 1.0;
+}
+
