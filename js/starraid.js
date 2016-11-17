@@ -117,11 +117,7 @@ loader.add('star','img/star.png')
 	    asteroids.push(asteroid);
     }
 
-    laser = PIXI.Sprite.fromFrame('laser');
-    laser.x = centerX;
-    laser.y = centerY;
-    laser.rotation = -0.4;
-    laser.visible = false;
+    createLaser();
     stage.addChild(laser);
 
 	update();
@@ -149,6 +145,25 @@ function update() {
 	renderer.render(stage);
 	requestAnimationFrame(update);
 
+}
+
+function createLaser() {
+	laser = new PIXI.Container();
+    laser.x = 0;
+    laser.y = 20;
+
+    laser1 = PIXI.Sprite.fromFrame('laser');
+    laser1.x = centerX + 10;
+    laser1.y = centerY;
+    laser1.rotation = -0.3;
+
+    laser2 = PIXI.Sprite.fromFrame('laser');
+    laser2.x = centerX - 10;
+    laser2.y = centerY;
+    laser2.rotation = 0.3;
+
+    laser.addChild(laser1);
+    laser.addChild(laser2);
 }
 
 function updateAsteroids() {
