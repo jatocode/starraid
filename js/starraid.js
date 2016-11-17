@@ -21,11 +21,12 @@ renderer.backgroundColor = 0x000020;
 
 var stage = new PIXI.Container();
 
-var starCount = 500;
-var asteroidCount = 1;
 
 var stars = [];
+var starCount = 600;
+
 var asteroids = [];
+var asteroidCount = 1;
 
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
 // MaxZ är hur långt bort stjärnorna kan vara som mest
@@ -46,84 +47,35 @@ var roll_dir = 0;
 
 var starFieldRoll = 0;
 
-var style = {
-	fontFamily : 'Arial',
-	fontSize : '36px',
-	fontStyle : 'italic',
-	fontWeight : 'bold',
-	fill : '#F7EDCA',
-	stroke : '#4a1850',
-	strokeThickness : 5,
-	dropShadow : true,
-	dropShadowColor : '#000000',
-	dropShadowAngle : Math.PI / 6,
-	dropShadowDistance : 6,
-};
-
-var infoStyle = {
-	fontFamily : 'Arial',
-	fontSize : '20px',
-	fontStyle : 'italic',
-	fontWeight : 'bold',
-	fill : '#F7EDCA',
-	stroke : '#4a1850',
-	strokeThickness : 5,
-	dropShadow : true,
-	dropShadowColor : '#000000',
-	dropShadowAngle : Math.PI / 6,
-	dropShadowDistance : 6,
-};
-
-// var dXText = new PIXI.Text('Dx: 0', infoStyle); 
-// dXText.x = width - dXText.width;
-// dXText.y = 400;
-
-// var dYText = new PIXI.Text('Dy: 0', infoStyle); 
-// dYText.x = width - dYText.width;
-// dYText.y = 425;
-
-var speedText= new PIXI.Text('Hastighet: ' + speed, infoStyle); 
-speedText.x = 10;
-speedText.y = 400;
-
-var infoText = new PIXI.Text('W/S = Öka/minska farten\nA/D = Rotera\nPiltangenter = Styra', {fill:0xffffff, fontSize: 8, fontFamily: 'courier'} );
-infoText.anchor.x = 0.5;
-infoText.x = width/2;
-infoText.y = height - 40;
-stage.addChild(infoText);
-
-var pointsText = new PIXI.Text('Poäng: ' + points, infoStyle); 
-pointsText.x = 10;
-pointsText.y = 425;
-
-var titleText = new PIXI.Text('Olles Planetfärd', style);
-titleText.anchor.x = 0.5;
-titleText.x = width/2;
-titleText.y = 0;
-
 var loader = PIXI.loader;
+
 var starContainer = new PIXI.Container();
 starContainer.pivot.x = width/2;
 starContainer.pivot.y = height/2;
 starContainer.x = width/2;
 starContainer.y = height/2;
+
 var graphics = new PIXI.Graphics();
 graphics.lineStyle(2, 0xFFFF00);
 graphics.drawRect(width/2 - 50, height/2 -25, 100, 50);
-starContainer.addChild(graphics);
+//starContainer.addChild(graphics);
+
+var titleText;
+var speedText;
+var pointsText;
+
+initTexts();
 
 stage.addChild(starContainer);
 loader.add('star','img/star.png')
       .add('comet', 'img/comet.png')
+      .add('stone', 'img/stone.png')
       .add('asteroid', 'img/asteroid.png')
       .once('complete',function () {
 
 	stage.addChild(titleText);
 	stage.addChild(speedText);
 	stage.addChild(pointsText);
-
-	// stage.addChild(dXText);
-	// stage.addChild(dYText);
 
     initControl();
 
@@ -149,22 +101,14 @@ loader.add('star','img/star.png')
 
 	// Asteroids
 	for(var i=0;i<asteroidCount;i++){
-	    var asteroid = PIXI.Sprite.fromFrame('asteroid');
+	    var asteroid = PIXI.Sprite.fromFrame('stone');
 	    asteroid.anchor.x = 0.5;
 	    asteroid.anchor.y = 0.5;
 
-	    asteroid.asteroidX = centerX; //-width / 2 + Math.random()*width;
-	    asteroid.asteroidY = centerY; //-height / 2 + Math.random()*height;
-	    asteroid.asteroidZ = maxZ; //Math.random()*maxZ;
-	    asteroid.asteroidScale = 1;
-
-            //asteroid.x = asteroid.asteroidX;
-            //asteroid.y = asteroid.asteroidY;
-            //asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
-            //asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
-
-            //var starScale = 1 - asteroid.asteroidZ / maxZ;
-            //asteroid.scale.x = asteroid.scale.y = starScale*starScale*asteroid.asteroidScale;
+	    asteroid.asteroidX = centerX; 
+	    asteroid.asteroidY = centerY; 
+	    asteroid.asteroidZ = maxZ; 
+	    asteroid.asteroidScale = 0.35;
 
 	    starContainer.addChild(asteroid);
 	    asteroids.push(asteroid);
@@ -179,6 +123,43 @@ loader.load();
 function update() {
 
 	var joystick = pollGamepad();
+
+	updateStars(joystick);
+	updateAsteroids();
+
+	speedText.text = 'Hastighet: ' + speed;
+	pointsText.text = 'Poäng: ' + points;
+
+	requestAnimationFrame(update);
+
+	renderer.render(stage);
+
+}
+
+function updateAsteroids() {
+	for(var index in asteroids) {
+	    var asteroid = asteroids[index];
+	    var asteroidScale = 1 - asteroid.asteroidZ / maxZ;
+
+	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
+	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
+	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
+	     asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
+
+	     asteroid.rotation += 0.1; 
+
+	      if(asteroid.asteroidZ < 0) {
+	           points += 1;
+	           asteroid.asteroidZ = maxZ;
+	           // asteroid.asteroidX =  -width / 2 + Math.random()*width ;
+	           // asteroid.asteroidY =  -height / 2 + Math.random()*height;
+	           asteroid.asteroidX = Math.random()*width/7 * (Math.round(Math.random()) * 2 - 1);
+	           asteroid.asteroidY = Math.random()*height/7 * (Math.round(Math.random()) * 2 - 1);
+	    }
+    }
+}
+
+function updateStars(joystick) {
 
 	for(var index in stars) {
 		var star = stars[index];
@@ -227,36 +208,50 @@ function update() {
 			star.starX = -width / 2 + Math.random()*width;
 			star.starY = -height / 2 + Math.random()*height;
 		}
-	}
+	}	
+}
 
-	for(var index in asteroids) {
-	    var asteroid = asteroids[index];
-	    var asteroidScale = 1 - asteroid.asteroidZ / maxZ;
+function initTexts() {
+	var style = {
+		fontFamily : 'Arial',
+		fontSize : '36px',
+		fontStyle : 'italic',
+		fontWeight : 'bold',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 5,
+		dropShadow : true,
+		dropShadowColor : '#000000',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+	};
 
-	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective / 10;
-	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective / 10;
-	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
-	     asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
+	var infoStyle = {
+		fontFamily : 'Arial',
+		fontSize : '20px',
+		fontStyle : 'italic',
+		fontWeight : 'bold',
+		fill : '#F7EDCA',
+		stroke : '#4a1850',
+		strokeThickness : 5,
+		dropShadow : true,
+		dropShadowColor : '#000000',
+		dropShadowAngle : Math.PI / 6,
+		dropShadowDistance : 6,
+	};
 
-	     asteroid.rotation += 0.20; 
+	speedText= new PIXI.Text('Hastighet: ' + speed, infoStyle); 
+	speedText.x = 10;
+	speedText.y = height - 2*speedText.height;
 
-	      if(asteroid.asteroidZ < 0) {
-	           points += 1;
-	           asteroid.asteroidZ = maxZ;
-	           asteroid.asteroidX = -width / 2 + Math.random()*width;
-	           asteroid.asteroidY = -height / 2 + Math.random()*height;
-	    }
-    }
+	pointsText = new PIXI.Text('Poäng: ' + points, infoStyle); 
+	pointsText.x = 10;
+	pointsText.y = height - pointsText.height;
 
-	// dXText.text = 'Dx:' + star.offsetx;
-	// dYText.text = 'Dy:' + star.offsety;
-	speedText.text = 'Hastighet: ' + speed;
-	pointsText.text = 'Poäng: ' + points;
-
-	requestAnimationFrame(update);
-
-	renderer.render(stage);
-
+	titleText = new PIXI.Text('Olles Planetfärd', style);
+	titleText.anchor.x = 0.5;
+	titleText.x = width/2;
+	titleText.y = 0;
 }
 
 function pollGamepad() {
@@ -298,7 +293,7 @@ function initControl() {
 	fast = keyboard(87), // w
 	slow = keyboard(83), // d
 	rollr = keyboard(65), // a
-        rolll = keyboard(68); // d
+    rolll = keyboard(68); // d
 
 	// Speed
 	fast.press = function() { speed += 5; };
