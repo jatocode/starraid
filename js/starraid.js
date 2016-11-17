@@ -1,13 +1,15 @@
 
 var starCount = 1000;
+var asteroidCount = 1;
+
+var stars = [];
+var asteroids = [];
 
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
-var perspective = 3000;
-
 // MaxZ är hur långt bort stjärnorna kan vara som mest
 // Används även för att räkna ut skalning och alpha
+var perspective = 3000;
 var maxZ = 5000;
-var stars = [];
 
 // Hämta canvas-elementet så vi kan slänga in det till Pixi
 var canvas = document.getElementById('star-canvas');
@@ -18,15 +20,16 @@ var height = canvas.offsetHeight;
 var centerX = width / 2;
 var centerY = height / 2;
 
-var maxMove = 200;
+var maxMove = 500;
+
+// Start Message
+console.log('Width: ' + width + ' Height: ' + height);
 
 var renderer = PIXI.autoDetectRenderer(width,height,{
 	view: canvas
 });
-
 renderer.backgroundColor = 0x000020;
 
-// Pixi behöver en grundcontainer som renderaren kan utgå från
 var stage = new PIXI.Container();
 
 var speed = 30;
@@ -108,6 +111,8 @@ graphics.drawRect(width/2 - 150, height/2 -100, 300, 200);
 
 stage.addChild(starContainer);
 loader.add('star','img/star.png');
+loader.add('comet', 'img/comet.png');
+loader.add('asteroid', 'img/asteroid.png');
 loader.once('complete',function () {
 
 	stage.addChild(titleText);
@@ -138,6 +143,27 @@ loader.once('complete',function () {
 		starContainer.addChild(star);
 		stars.push(star);
 	}
+	for(var i=0;i<asteroidCount;i++){
+	    var asteroid = PIXI.Sprite.fromFrame('asteroid');
+	    asteroid.anchor.x = 0.5;
+	    asteroid.anchor.y = 0.5;
+
+	    asteroid.asteroidX = Math.random()*width;
+	    asteroid.asteroidY = Math.random()*height;
+	    asteroid.asteroidZ = Math.random()*maxZ;
+	    asteroid.asteroidScale = 0.1;
+
+            asteroid.x = asteroid.asteroidX;
+            asteroid.y = asteroid.asteroidY;
+            //asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
+            //asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
+
+            var starScale = 1 - asteroid.asteroidZ / maxZ;
+        //    asteroid.scale.x = asteroid.scale.y = starScale*starScale*asteroid.asteroidScale;
+
+	    starContainer.addChild(asteroid);
+	    asteroids.push(asteroid);
+        }
 
 	update();
 
@@ -153,17 +179,18 @@ function update() {
 		// räkna ut ett skalvärde baserat på hur långt bort stjärnan är
 		var starScale = 1 - star.starZ / maxZ;
 
+		var move_speed = 8;
 		if(lmove) {
-			star.offsetx = Math.min(maxMove, star.offsetx + 2);
+			star.offsetx = Math.min(maxMove, star.offsetx + move_speed);
 		} 
 		if(rmove) {
-			star.offsetx = Math.max(-maxMove, star.offsetx - 2);
+			star.offsetx = Math.max(-maxMove, star.offsetx - move_speed);
 		}
 		if(umove) {
-			star.offsety = Math.max(-maxMove, star.offsety - 2);
+			star.offsety = Math.max(-maxMove, star.offsety - move_speed);
 		} 
 		if(dmove) {
-			star.offsety = Math.min(maxMove, star.offsety + 2);
+			star.offsety = Math.min(maxMove, star.offsety + move_speed);
 		}
 		
 		var roll_speed = 0.15/perspective;
@@ -197,6 +224,10 @@ function update() {
 			star.starY = -height / 2 + Math.random()*height;
 		}
 	}
+
+	for(var index in asteroids) {
+	    var asteroid = asteroids[index];
+        }
 
 	dXText.text = 'Dx:' + star.offsetx;
 	dYText.text = 'Dy:' + star.offsety;
