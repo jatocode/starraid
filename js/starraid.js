@@ -1,3 +1,25 @@
+// Starraid game for Olle by Tobias
+//
+//
+
+var canvas = document.getElementById('star-canvas');
+var width = canvas.offsetWidth;
+var height = canvas.offsetHeight;
+
+// 3d-beräkningen behöver en mittpunkt
+var centerX = width / 2;
+var centerY = height / 2;
+
+// Start Message
+console.log('*********** Starting StarRaid for Olle ***************');
+console.log('Width: ' + width + ' Height: ' + height);
+
+var renderer = PIXI.autoDetectRenderer(width,height,{
+	view: canvas
+});
+renderer.backgroundColor = 0x000020;
+
+var stage = new PIXI.Container();
 
 var starCount = 1000;
 var asteroidCount = 5;
@@ -11,36 +33,17 @@ var asteroids = [];
 var perspective = 3000;
 var maxZ = 5000;
 
-// Hämta canvas-elementet så vi kan slänga in det till Pixi
-var canvas = document.getElementById('star-canvas');
-var width = canvas.offsetWidth;
-var height = canvas.offsetHeight;
-
-// 3d-beräkningen behöver en mittpunkt
-var centerX = width / 2;
-var centerY = height / 2;
-
-var maxMove = 500;
-
-// Start Message
-console.log('Width: ' + width + ' Height: ' + height);
-
-var renderer = PIXI.autoDetectRenderer(width,height,{
-	view: canvas
-});
-renderer.backgroundColor = 0x000020;
-
-var stage = new PIXI.Container();
-
 var speed = 30;
 var asteroidSpeed = speed * 3;
 var points = 0;
+var move_speed = 8;
+var maxMove = 500;
 
-var rmove = false;
-var lmove = false;
-var umove = false;
-var dmove = false;
+var moveX = 0;
+var moveY = 0;
+var resetMove = false;
 var roll_dir = 0;
+
 var starFieldRoll = 0;
 
 var style = {
@@ -181,19 +184,21 @@ function update() {
 		// räkna ut ett skalvärde baserat på hur långt bort stjärnan är
 		var starScale = 1 - star.starZ / maxZ;
 
-		var move_speed = 8;
-		if(lmove) {
-			star.offsetx = Math.min(maxMove, star.offsetx + move_speed);
+                if(resetMove == true) {
+                    star.offsetx = star.offsety = starFieldRoll = 0;
+                    starContainer.rotation = 0;
+                }
+
+		if(moveX != 0) {
+	            star.offsetx += moveX * move_speed;
+		    star.offsetx = Math.min(maxMove, star.offsetx);
+		    star.offsetx = Math.max(-maxMove, star.offsetx);
 		} 
-		if(rmove) {
-			star.offsetx = Math.max(-maxMove, star.offsetx - move_speed);
-		}
-		if(umove) {
-			star.offsety = Math.max(-maxMove, star.offsety - move_speed);
+		if(moveY != 0) {
+		    star.offsety += moveY * move_speed;
+		    star.offsety = Math.min(maxMove, star.offsety);
+		    star.offsety = Math.max(-maxMove, star.offsety);
 		} 
-		if(dmove) {
-			star.offsety = Math.min(maxMove, star.offsety + move_speed);
-		}
 		
 		var roll_speed = 0.15/perspective;
 		if(roll_dir != 0) {
@@ -256,60 +261,42 @@ function initControl() {
 	up = keyboard(38),
 	right = keyboard(39),
 	down = keyboard(40),
+	reset = keyboard(13), // enter
 	fast = keyboard(87), // w
 	slow = keyboard(83), // d
 	rollr = keyboard(65), // a
         rolll = keyboard(68); // d
 
 	// Speed
-	fast.press = function() {
-		speed += 5;
-	};
-	slow.press = function() {
-		speed = Math.max(-15, speed -5);
-	};
+	fast.press = function() { speed += 5; };
+	slow.press = function() { speed = Math.max(-15, speed -5); };
 
 	// Left and right
-	left.press = function() {
-		lmove = true;
-	}
-	left.release = function() {
-		lmove = false;
-	}
-	right.press = function() {
-		rmove = true;
-	}
-	right.release = function() {
-		rmove = false;
-	}
+	left.press    = function() { moveX = -1; }
+	left.release  = function() { moveX = 0; }
+	right.press   = function() { moveX = 1; }
+	right.release = function() { moveX = 0; }
 
 	// Up and down
-	up.press = function() {
-		umove = true;
-	}
-	up.release = function() {
-		umove = false;
-	}
-	down.press = function() {
-		dmove = true;
-	}
-	down.release = function() {
-		dmove = false;
-	}
+	up.press     = function() { moveY = -1; }
+	up.release   = function() { moveY = 0; }
+	down.press   = function() { moveY = 1; }
+	down.release = function() { moveY = 0; }
 
 	// Roll
-	rollr.press = function() {
-		roll_dir = 1;
-	}
-	rollr.release = function() {
-		roll_dir = 0;
-	}
-	rolll.press = function() {
-		roll_dir = -1;
-	}
-	rolll.release = function() {
-		roll_dir = 0;
-        }	
+	rollr.press   = function() { roll_dir = 1; }
+	rollr.release = function() { roll_dir = 0; }
+	rolll.press   = function() { roll_dir = -1; }
+	rolll.release = function() { roll_dir = 0; }	
+
+        reset.press   = function() { resetMove = true; }
+        reset.release = function() { resetMove = false; }
+
+        window.addEventListener("gamepadconnected", function(e) {
+            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+                e.gamepad.index, e.gamepad.id,
+                e.gamepad.buttons.length, e.gamepad.axes.length);
+        });
 }
 
 // From PIXI.js cat-example:
