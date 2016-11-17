@@ -74,6 +74,12 @@ loader.add('star','img/star.png')
       .add('stone', 'img/stone.png')
       .add('asteroid', 'img/asteroid.png')
       .add('laser', 'img/laser.png')
+      .add('earth', 'img/earth.png')
+      .add('mars', 'img/mars.png')
+      .add('saturn', 'img/saturn.png')
+      .add('uranus', 'img/uranus.png')
+      .add('jupiter', 'img/jupiter.png')
+      .add('karlavagnen', 'img/karlavagnen.png')
       .once('complete',function () {
 
 	stage.addChild(titleText);
@@ -81,6 +87,7 @@ loader.add('star','img/star.png')
 	stage.addChild(pointsText);
 
     initControl();
+    createPlanets();
 
 	for(var i=0;i<starCount;i++){
 		var star = PIXI.Sprite.fromFrame('star');
@@ -118,7 +125,7 @@ loader.add('star','img/star.png')
     }
 
     createLaser();
-    stage.addChild(laser);
+    starContainer.addChild(laser);
 
 	update();
 
@@ -239,6 +246,17 @@ function updateStars(joystick) {
 			star.starY = -height / 2 + Math.random()*height;
 		}
 	}	
+}
+
+function createPlanets() {
+	var skyobjects = ['earth','mars','jupiter','karlavagnen','uranus','saturn'];
+	for(var o in skyobjects) {
+		var img = PIXI.Sprite.fromFrame(skyobjects[o]);
+		img.x = Math.random()*width;
+		img.y = Math.random()*height;
+		img.scale.x = img.scale.y = 0.15;
+		starContainer.addChild(img);
+	}
 }
 
 function initTexts() {
