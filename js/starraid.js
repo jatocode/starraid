@@ -21,8 +21,8 @@ renderer.backgroundColor = 0x000020;
 
 var stage = new PIXI.Container();
 
-var starCount = 1000;
-var asteroidCount = 3;
+var starCount = 500;
+var asteroidCount = 1;
 
 var stars = [];
 var asteroids = [];
@@ -74,13 +74,13 @@ var infoStyle = {
 	dropShadowDistance : 6,
 };
 
-var dXText = new PIXI.Text('Dx: 0', infoStyle); 
-dXText.x = width - dXText.width;
-dXText.y = 400;
+// var dXText = new PIXI.Text('Dx: 0', infoStyle); 
+// dXText.x = width - dXText.width;
+// dXText.y = 400;
 
-var dYText = new PIXI.Text('Dy: 0', infoStyle); 
-dYText.x = width - dYText.width;
-dYText.y = 425;
+// var dYText = new PIXI.Text('Dy: 0', infoStyle); 
+// dYText.x = width - dYText.width;
+// dYText.y = 425;
 
 var speedText= new PIXI.Text('Hastighet: ' + speed, infoStyle); 
 speedText.x = 10;
@@ -122,10 +122,10 @@ loader.add('star','img/star.png')
 	stage.addChild(speedText);
 	stage.addChild(pointsText);
 
-	stage.addChild(dXText);
-	stage.addChild(dYText);
+	// stage.addChild(dXText);
+	// stage.addChild(dYText);
 
-        initControl();
+    initControl();
 
 	for(var i=0;i<starCount;i++){
 		var star = PIXI.Sprite.fromFrame('star');
@@ -233,8 +233,8 @@ function update() {
 	    var asteroid = asteroids[index];
 	    var asteroidScale = 1 - asteroid.asteroidZ / maxZ;
 
-	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
-	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
+	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective / 10;
+	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective / 10;
 	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
 	     asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
@@ -246,10 +246,10 @@ function update() {
 	           asteroid.asteroidX = -width / 2 + Math.random()*width;
 	           asteroid.asteroidY = -height / 2 + Math.random()*height;
 	    }
-        }
+    }
 
-	dXText.text = 'Dx:' + star.offsetx;
-	dYText.text = 'Dy:' + star.offsety;
+	// dXText.text = 'Dx:' + star.offsetx;
+	// dYText.text = 'Dy:' + star.offsety;
 	speedText.text = 'Hastighet: ' + speed;
 	pointsText.text = 'Poäng: ' + points;
 
