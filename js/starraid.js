@@ -40,8 +40,7 @@ var rmove = false;
 var lmove = false;
 var umove = false;
 var dmove = false;
-var roll_right = false;
-var roll_left = false;
+var roll_dir = 0;
 var starFieldRoll = 0;
 
 var style = {
@@ -144,6 +143,8 @@ loader.add('star','img/star.png')
 		starContainer.addChild(star);
 		stars.push(star);
 	}
+
+	// Asteroids
 	for(var i=0;i<asteroidCount;i++){
 	    var asteroid = PIXI.Sprite.fromFrame('asteroid');
 	    asteroid.anchor.x = 0.5;
@@ -195,16 +196,10 @@ function update() {
 		}
 		
 		var roll_speed = 0.15/perspective;
-		if(roll_right) {
-                    // Rotera varje stjärna baserat på antal roll
-		    starFieldRoll -= roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		if(roll_dir != 0) {
+		    starFieldRoll += roll_dir * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
 		    starContainer.rotation = starFieldRoll;
-                }
-		if(roll_left) {
-                    // Rotera varje stjärna baserat på antal roll
-		    starFieldRoll += roll_speed; //= Math.min(2*3.14, starFieldRoll + 0.1);
-		    starContainer.rotation = starFieldRoll;
-                }
+                } 
 
 		// Här är hela den magiska 3d-projektionsrutinen
 		// dela x och y med z och gångra med perspektiv
@@ -234,6 +229,8 @@ function update() {
 	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
 	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
 	     asteroid.asteroidZ -= asteroidSpeed;
+
+	     asteroid.rotation += 0.20; 
 
 	      if(asteroid.asteroidZ < 0) {
 	           asteroid.asteroidZ = maxZ;
@@ -302,16 +299,16 @@ function initControl() {
 
 	// Roll
 	rollr.press = function() {
-		roll_right = true;
+		roll_dir = 1;
 	}
 	rollr.release = function() {
-		roll_right = false;
+		roll_dir = 0;
 	}
 	rolll.press = function() {
-		roll_left = true;
+		roll_dir = -1;
 	}
 	rolll.release = function() {
-		roll_left = false;
+		roll_dir = 0;
         }	
 }
 
