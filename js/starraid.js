@@ -1,6 +1,6 @@
 
 var starCount = 1000;
-var asteroidCount = 1;
+var asteroidCount = 5;
 
 var stars = [];
 var asteroids = [];
@@ -33,6 +33,7 @@ renderer.backgroundColor = 0x000020;
 var stage = new PIXI.Container();
 
 var speed = 30;
+var asteroidSpeed = speed * 3;
 var points = 0;
 
 var rmove = false;
@@ -110,10 +111,10 @@ graphics.drawRect(width/2 - 150, height/2 -100, 300, 200);
 //starContainer.addChild(graphics);
 
 stage.addChild(starContainer);
-loader.add('star','img/star.png');
-loader.add('comet', 'img/comet.png');
-loader.add('asteroid', 'img/asteroid.png');
-loader.once('complete',function () {
+loader.add('star','img/star.png')
+      .add('comet', 'img/comet.png')
+      .add('asteroid', 'img/asteroid.png')
+      .once('complete',function () {
 
 	stage.addChild(titleText);
 	stage.addChild(speedText);
@@ -148,18 +149,18 @@ loader.once('complete',function () {
 	    asteroid.anchor.x = 0.5;
 	    asteroid.anchor.y = 0.5;
 
-	    asteroid.asteroidX = Math.random()*width;
-	    asteroid.asteroidY = Math.random()*height;
-	    asteroid.asteroidZ = Math.random()*maxZ;
-	    asteroid.asteroidScale = 0.1;
+	    asteroid.asteroidX = centerX; //-width / 2 + Math.random()*width;
+	    asteroid.asteroidY = centerY; //-height / 2 + Math.random()*height;
+	    asteroid.asteroidZ = maxZ; //Math.random()*maxZ;
+	    asteroid.asteroidScale = 1;
 
-            asteroid.x = asteroid.asteroidX;
-            asteroid.y = asteroid.asteroidY;
+            //asteroid.x = asteroid.asteroidX;
+            //asteroid.y = asteroid.asteroidY;
             //asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
             //asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
 
-            var starScale = 1 - asteroid.asteroidZ / maxZ;
-        //    asteroid.scale.x = asteroid.scale.y = starScale*starScale*asteroid.asteroidScale;
+            //var starScale = 1 - asteroid.asteroidZ / maxZ;
+            //asteroid.scale.x = asteroid.scale.y = starScale*starScale*asteroid.asteroidScale;
 
 	    starContainer.addChild(asteroid);
 	    asteroids.push(asteroid);
@@ -227,6 +228,18 @@ function update() {
 
 	for(var index in asteroids) {
 	    var asteroid = asteroids[index];
+	    var asteroidScale = 1 - asteroid.asteroidZ / maxZ;
+
+	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
+	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
+	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
+	     asteroid.asteroidZ -= asteroidSpeed;
+
+	      if(asteroid.asteroidZ < 0) {
+	           asteroid.asteroidZ = maxZ;
+	           asteroid.asteroidX = -width / 2 + Math.random()*width;
+	           asteroid.asteroidY = -height / 2 + Math.random()*height;
+	    }
         }
 
 	dXText.text = 'Dx:' + star.offsetx;
