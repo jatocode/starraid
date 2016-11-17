@@ -22,7 +22,7 @@ renderer.backgroundColor = 0x000020;
 var stage = new PIXI.Container();
 
 var starCount = 1000;
-var asteroidCount = 5;
+var asteroidCount = 3;
 
 var stars = [];
 var asteroids = [];
@@ -96,7 +96,7 @@ var pointsText = new PIXI.Text('Poäng: ' + points, infoStyle);
 pointsText.x = 10;
 pointsText.y = 425;
 
-var titleText = new PIXI.Text('Olles Stjärnraid', style);
+var titleText = new PIXI.Text('Olles Planetfärd', style);
 titleText.anchor.x = 0.5;
 titleText.x = width/2;
 titleText.y = 0;
@@ -108,9 +108,9 @@ starContainer.pivot.y = height/2;
 starContainer.x = width/2;
 starContainer.y = height/2;
 var graphics = new PIXI.Graphics();
-graphics.lineStyle(2, 0xFF0000);
-graphics.drawRect(width/2 - 150, height/2 -100, 300, 200);
-//starContainer.addChild(graphics);
+graphics.lineStyle(2, 0xFFFF00);
+graphics.drawRect(width/2 - 50, height/2 -25, 100, 50);
+starContainer.addChild(graphics);
 
 stage.addChild(starContainer);
 loader.add('star','img/star.png')
@@ -184,27 +184,29 @@ function update() {
 		// räkna ut ett skalvärde baserat på hur långt bort stjärnan är
 		var starScale = 1 - star.starZ / maxZ;
 
-                if(resetMove == true) {
-                    star.offsetx = star.offsety = starFieldRoll = 0;
-                    starContainer.rotation = 0;
-                }
+		if(resetMove == true) {
+			star.offsetx = star.offsety = starFieldRoll = 0;
+			starContainer.rotation = 0;
+			points = 0;
+			speed = 30;
+		}
 
 		if(moveX != 0) {
-	            star.offsetx += moveX * move_speed;
-		    star.offsetx = Math.min(maxMove, star.offsetx);
-		    star.offsetx = Math.max(-maxMove, star.offsetx);
+			star.offsetx += moveX * move_speed;
+			star.offsetx = Math.min(maxMove, star.offsetx);
+			star.offsetx = Math.max(-maxMove, star.offsetx);
 		} 
 		if(moveY != 0) {
-		    star.offsety += moveY * move_speed;
-		    star.offsety = Math.min(maxMove, star.offsety);
-		    star.offsety = Math.max(-maxMove, star.offsety);
+			star.offsety += moveY * move_speed;
+			star.offsety = Math.min(maxMove, star.offsety);
+			star.offsety = Math.max(-maxMove, star.offsety);
 		} 
 		
 		var roll_speed = 0.15/perspective;
 		if(roll_dir != 0) {
 		    starFieldRoll += roll_dir * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
 		    starContainer.rotation = starFieldRoll;
-                } 
+		} 
 
 		// Här är hela den magiska 3d-projektionsrutinen
 		// dela x och y med z och gångra med perspektiv
@@ -233,11 +235,12 @@ function update() {
 	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
 	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
 	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
-	     asteroid.asteroidZ -= asteroidSpeed;
+	     asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
 	     asteroid.rotation += 0.20; 
 
 	      if(asteroid.asteroidZ < 0) {
+	           points += 1;
 	           asteroid.asteroidZ = maxZ;
 	           asteroid.asteroidX = -width / 2 + Math.random()*width;
 	           asteroid.asteroidY = -height / 2 + Math.random()*height;
@@ -289,14 +292,14 @@ function initControl() {
 	rolll.press   = function() { roll_dir = -1; }
 	rolll.release = function() { roll_dir = 0; }	
 
-        reset.press   = function() { resetMove = true; }
-        reset.release = function() { resetMove = false; }
+	reset.press   = function() { resetMove = true; }
+	reset.release = function() { resetMove = false; }
 
-        window.addEventListener("gamepadconnected", function(e) {
-            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-                e.gamepad.index, e.gamepad.id,
-                e.gamepad.buttons.length, e.gamepad.axes.length);
-        });
+	window.addEventListener("gamepadconnected", function(e) {
+		console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+			e.gamepad.index, e.gamepad.id,
+			e.gamepad.buttons.length, e.gamepad.axes.length);
+	});
 }
 
 // From PIXI.js cat-example:
