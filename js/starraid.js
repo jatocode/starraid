@@ -21,7 +21,6 @@ renderer.backgroundColor = 0x000020;
 
 var stage = new PIXI.Container();
 
-
 var stars = [];
 var starCount = 600;
 
@@ -34,7 +33,7 @@ var asteroidCount = 1;
 var perspective = 3000;
 var maxZ = 5000;
 
-var speed = 30;
+var speed = 50;
 var asteroidSpeed = speed * 3;
 var points = 0;
 var move_speed = 8;
@@ -43,7 +42,8 @@ var maxMove = 500;
 var moveX = 0;
 var moveY = 0;
 var resetMove = false;
-var roll_dir = 0;
+var roll = 0;
+var fire = false;
 
 var starFieldRoll = 0;
 
@@ -64,6 +64,8 @@ var titleText;
 var speedText;
 var pointsText;
 
+var laser;
+
 initTexts();
 
 stage.addChild(starContainer);
@@ -71,6 +73,7 @@ loader.add('star','img/star.png')
       .add('comet', 'img/comet.png')
       .add('stone', 'img/stone.png')
       .add('asteroid', 'img/asteroid.png')
+      .add('laser', 'img/laser.png')
       .once('complete',function () {
 
 	stage.addChild(titleText);
@@ -112,7 +115,14 @@ loader.add('star','img/star.png')
 
 	    starContainer.addChild(asteroid);
 	    asteroids.push(asteroid);
-        }
+    }
+
+    laser = PIXI.Sprite.fromFrame('laser');
+    laser.x = centerX;
+    laser.y = centerY;
+    laser.rotation = -0.4;
+    laser.visible = false;
+    stage.addChild(laser);
 
 	update();
 
@@ -127,12 +137,17 @@ function update() {
 	updateStars(joystick);
 	updateAsteroids();
 
+	if((fire == true) || (joystick[2])) {
+		laser.visible = true;	
+	} else {
+		laser.visible = false;
+	}
+
 	speedText.text = 'Hastighet: ' + speed;
 	pointsText.text = 'Poäng: ' + points;
 
-	requestAnimationFrame(update);
-
 	renderer.render(stage);
+	requestAnimationFrame(update);
 
 }
 
@@ -171,7 +186,7 @@ function updateStars(joystick) {
 			star.offsetx = star.offsety = starFieldRoll = 0;
 			starContainer.rotation = 0;
 			points = 0;
-			speed = 30;
+			speed = 50;
 		}
 		
 		star.offsetx += joystick[0] * move_speed;
@@ -185,8 +200,8 @@ function updateStars(joystick) {
 		star.offsety = Math.max(-maxMove, star.offsety);
 		
 		var roll_speed = 0.15/perspective;
-		if(roll_dir != 0) {
-		    starFieldRoll += roll_dir * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		if(roll != 0) {
+		    starFieldRoll += roll * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
 		    starContainer.rotation = starFieldRoll;
 		} 
 
@@ -277,10 +292,15 @@ function pollGamepad() {
 		console.log('button 3');
 	}
 
+	var button = buttonPressed(gp.buttons[0]) || 
+		buttonPressed(gp.buttons[1]) ||
+		buttonPressed(gp.buttons[2]) ||
+		buttonPressed(gp.buttons[3]);
+
 	var x = Math.floor(gp.axes[0]);
 	var y = Math.floor(gp.axes[1]);
 
-	return [x,y];
+	return [x,y, button];
 }
 
 function initControl() {
@@ -290,6 +310,7 @@ function initControl() {
 	right = keyboard(39),
 	down = keyboard(40),
 	reset = keyboard(13), // enter
+	space = keyboard(32), // space
 	fast = keyboard(87), // w
 	slow = keyboard(83), // d
 	rollr = keyboard(65), // a
@@ -312,13 +333,16 @@ function initControl() {
 	down.release = function() { moveY = 0; }
 
 	// Roll
-	rollr.press   = function() { roll_dir = 1; }
-	rollr.release = function() { roll_dir = 0; }
-	rolll.press   = function() { roll_dir = -1; }
-	rolll.release = function() { roll_dir = 0; }	
+	rollr.press   = function() { roll = 1; }
+	rollr.release = function() { roll = 0; }
+	rolll.press   = function() { roll = -1; }
+	rolll.release = function() { roll = 0; }	
 
 	reset.press   = function() { resetMove = true; }
 	reset.release = function() { resetMove = false; }
+
+	space.press   = function() { fire = true; }
+	space.release = function() { fire = false; }
 
 	window.addEventListener("gamepadconnected", function(e) {
 		console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
