@@ -1,6 +1,6 @@
 // Starraid game for Olle by Tobias
 //
-//
+// https://github.com/jatocode/starraid
 
 var canvas = document.getElementById('star-canvas');
 var width = canvas.offsetWidth;
@@ -22,7 +22,7 @@ renderer.backgroundColor = 0x000020;
 var stage = new PIXI.Container();
 
 var stars = [];
-var starCount = 600;
+var starCount = 1600;
 
 var asteroids = [];
 var asteroidCount = 1;
@@ -44,6 +44,7 @@ var moveY = 0;
 var resetMove = false;
 var roll = 0;
 var fire = false;
+var hyper = false;
 
 var starFieldRoll = 0;
 
@@ -102,6 +103,7 @@ loader.add('star','img/star.png')
 		star.offsetx = 0;
 		star.offsety = 0;
 		star.roll = 0;
+		star.age = 0;
 
 		star.starScale = 0.2 + Math.random()*0.2;
 
@@ -210,7 +212,17 @@ function updateStars(joystick) {
 			points = 0;
 			speed = 50;
 		}
+
+		if(hyper == true) {
+		    perspective -= 0.08;
+		} else {
+		    perspective = 3000;
+		}
 		
+       // 	if(moveX) {
+	//	    star.age = Date.now();
+         //       }
+                star.age++;
 		star.offsetx += joystick[0] * move_speed;
 		star.offsetx += moveX * move_speed;
 		star.offsetx = Math.min(maxMove, star.offsetx);
@@ -220,6 +232,14 @@ function updateStars(joystick) {
 		star.offsety += moveY * move_speed;
 		star.offsety = Math.min(maxMove, star.offsety);
 		star.offsety = Math.max(-maxMove, star.offsety);
+
+		// Onödigt komplicerat, gör om gör rätt
+//		if((star.age !=0) && (Date.now() - star.age) > 500) {
+//		if(star.age > 100) {
+//		    star.offsetx += 10;
+//		    star.offsetx = Math.min(0, star.offsetx);
+//		    if(star.offsetx == 0) star.age = 0;
+//		} 
 		
 		var roll_speed = 0.15/perspective;
 		if(roll != 0) {
@@ -300,6 +320,12 @@ function initTexts() {
 	titleText.anchor.x = 0.5;
 	titleText.x = width/2;
 	titleText.y = 0;
+
+	var infoText = new PIXI.Text('Piltangenter = Styr         A/D = roll       W/S = hastighet       Space = fire     Enter = reset', {fontFamily:'courier', fontSize: '10px', fill:'#ffffff'});
+	infoText.anchor.x = 0.5;
+	infoText.x = width/2;
+	infoText.y = height - 20;
+	stage.addChild(infoText);
 }
 
 function pollGamepad() {
@@ -347,7 +373,8 @@ function initControl() {
 	fast = keyboard(87), // w
 	slow = keyboard(83), // d
 	rollr = keyboard(65), // a
-    rolll = keyboard(68); // d
+	hyperk = keyboard(72), // h
+        rolll = keyboard(68); // d
 
 	// Speed
 	fast.press = function() { speed += 5; };
@@ -376,6 +403,9 @@ function initControl() {
 
 	space.press   = function() { fire = true; }
 	space.release = function() { fire = false; }
+
+	hyperk.press   = function() { hyper = true; }
+	hyperk.relasee = function() { hyper = false; }
 
 	window.addEventListener("gamepadconnected", function(e) {
 		console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
