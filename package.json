@@ -1,0 +1,22 @@
+{
+  "name": "starfield",
+  "version": "0.1.0",
+  "description": "Bygger enkelt spel för min 5-åring.",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jatocode/starraid.git"
+  },
+  "author": "tobias.jansson@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jatocode/starraid/issues"
+  },
+  "homepage": "https://github.com/jatocode/starraid#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1"
+  }
+}
