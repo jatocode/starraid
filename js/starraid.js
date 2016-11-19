@@ -151,10 +151,10 @@ loader.add('star','img/star.png')
 
  //       starContainer.addChild(asteroid);
         asteroids.push(asteroid);
-}
+	}
 
-createLaser();
-starContainer.addChild(laser);
+	createLaser();
+	stage.addChild(laser);
 
     update();
 
@@ -168,7 +168,7 @@ function update() {
 
     updateStars(joystick);
 //    updateAsteroids(joystick);
-    updateUfos();
+    updateUfos(joystick);
 
     if((fire == true) || (joystick[2])) {
     	laser.visible = true;	
@@ -187,7 +187,7 @@ function update() {
 function createLaser() {
 	laser = new PIXI.Container();
 	laser.x = 0;
-	laser.y = 20;
+	laser.y = 0;
 
 	laser1 = PIXI.Sprite.fromFrame('laser');
 	laser1.x = centerX + 10;
@@ -213,7 +213,8 @@ function updateAsteroids(joystick) {
 		asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
 		asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
-		if((fire == true) && (asteroid.hit == false) &&
+		if(((fire) || (joystick[2])) && 
+			(asteroid.hit == false) &&
             (asteroid.x > centerX - hitSize) && (asteroid.x < centerX + hitSize) &&
             (asteroid.y > centerY - hitSize) && (asteroid.y < centerY + hitSize)) {
                   //  points += 1;
@@ -236,7 +237,7 @@ function updateAsteroids(joystick) {
         }
     }
 
-function updateUfos() {
+function updateUfos(joystick) {
 	for(var index in ufos) {
 		var ufo = ufos[index];
 		ufo.x -= ufoSpeed;
@@ -247,7 +248,8 @@ function updateUfos() {
 			ufo.hit = false;
 		}
 
-        if((fire == true) && (!ufo.hit) &&
+        if(((fire == true) || (joystick[2])) &&
+        	(!ufo.hit) &&
             (ufo.x > centerX - hitSize) && (ufo.x < centerX + hitSize) &&
             (ufo.y > centerY - hitSize) && (ufo.y < centerY + hitSize)) {
                 points += 1;
