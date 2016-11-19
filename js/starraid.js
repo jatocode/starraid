@@ -29,7 +29,7 @@ var asteroidCount = 1;
 
 var ufos = [];
 var ufoCount = 1;
-var ufoSpeed = 7;
+var ufoSpeed = 6;
 
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
 // MaxZ är hur långt bort stjärnorna kan vara som mest
@@ -49,6 +49,8 @@ var resetMove = false;
 var roll = 0;
 var fire = false;
 var hyper = false;
+
+var hitSize = 20;
 
 var starFieldRoll = 0;
 
@@ -95,10 +97,10 @@ loader.add('star','img/star.png')
     initControl();
     createPlanets();
 
-    // var fireFrame = new PIXI.Graphics();
-    // fireFrame.lineStyle(2, 0xff0000);
-    // fireFrame.drawRect(centerX - 30, centerY - 30, 60, 60);
-    // starContainer.addChild(fireFrame);
+    var fireFrame = new PIXI.Graphics();
+    fireFrame.lineStyle(2, 0xff0000);
+    fireFrame.drawRect(centerX - hitSize, centerY - hitSize, hitSize * 2, hitSize * 2);
+ //   starContainer.addChild(fireFrame);
 
     for(var i=0;i<ufoCount;i++) {
 	    var ufo = new PIXI.Sprite.fromFrame('ufogrå1');
@@ -147,7 +149,7 @@ loader.add('star','img/star.png')
         asteroid.offsety = 0;
         asteroid.hit = false;
 
-        starContainer.addChild(asteroid);
+ //       starContainer.addChild(asteroid);
         asteroids.push(asteroid);
 }
 
@@ -165,7 +167,7 @@ function update() {
     var joystick = pollGamepad();
 
     updateStars(joystick);
-    updateAsteroids(joystick);
+//    updateAsteroids(joystick);
     updateUfos();
 
     if((fire == true) || (joystick[2])) {
@@ -212,8 +214,8 @@ function updateAsteroids(joystick) {
 		asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
 		if((fire == true) && (asteroid.hit == false) &&
-            (asteroid.x > centerX - 30) && (asteroid.x < centerX + 30) &&
-            (asteroid.y > centerY - 30) && (asteroid.y < centerY + 30)) {
+            (asteroid.x > centerX - hitSize) && (asteroid.x < centerX + hitSize) &&
+            (asteroid.y > centerY - hitSize) && (asteroid.y < centerY + hitSize)) {
                   //  points += 1;
               asteroid.visible = false;
               asteroid.hit = true;
@@ -246,14 +248,21 @@ function updateUfos() {
 		}
 
         if((fire == true) && (!ufo.hit) &&
-            (ufo.x > centerX - 30) && (ufo.x < centerX + 30) &&
-            (ufo.y > centerY - 30) && (ufo.y < centerY + 30)) {
+            (ufo.x > centerX - hitSize) && (ufo.x < centerX + hitSize) &&
+            (ufo.y > centerY - hitSize) && (ufo.y < centerY + hitSize)) {
                 points += 1;
+            	if(points == 5) {
+            		ufoSpeed *= 1.5;
+            	} else if(points == 10) {
+            		ufoSpeed *= 1.5;
+            	} else if(points == 15) {
+            		ufoSpeed *= 1.5;
+            	}
                 ufo.visible = false;
                 ufo.hit = true;
         }
-
 	}
+
 }
 
 function updateStars(joystick) {
