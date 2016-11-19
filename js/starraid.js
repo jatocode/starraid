@@ -22,10 +22,14 @@ renderer.backgroundColor = 0x000020;
 var stage = new PIXI.Container();
 
 var stars = [];
-var starCount = 1600;
+var starCount = 500;
 
 var asteroids = [];
 var asteroidCount = 1;
+
+var ufos = [];
+var ufoCount = 1;
+var ufoSpeed = 7;
 
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
 // MaxZ är hur långt bort stjärnorna kan vara som mest
@@ -34,7 +38,7 @@ var perspective = 3000;
 var maxZ = 5000;
 
 var speed = 50;
-var asteroidSpeed = speed * 3;
+var asteroidSpeed = speed * 2;
 var points = 0;
 var move_speed = 8;
 var maxMove = 500;
@@ -81,6 +85,7 @@ loader.add('star','img/star.png')
       .add('uranus', 'img/uranus.png')
       .add('jupiter', 'img/jupiter.png')
       .add('karlavagnen', 'img/karlavagnen.png')
+      .add('ufogrå1', 'img/ufo-grå1.png')
       .once('complete',function () {
 
 	stage.addChild(titleText);
@@ -89,6 +94,16 @@ loader.add('star','img/star.png')
 
     initControl();
     createPlanets();
+
+    for(var i=0;i<ufoCount;i++) {
+	    var ufo = new PIXI.Sprite.fromFrame('ufogrå1');
+	    ufo.x = width + 100;
+	    ufo.y = height/2;
+	    ufo.scale.x = ufo.scale.y = 1 / 10;    	
+	    starContainer.addChild(ufo);
+	    ufos.push(ufo);
+    }
+
 
 	for(var i=0;i<starCount;i++){
 		var star = PIXI.Sprite.fromFrame('star');
@@ -112,24 +127,26 @@ loader.add('star','img/star.png')
 	}
 
 	// Asteroids
-	for(var i=0;i<asteroidCount;i++){
-	    var asteroid = PIXI.Sprite.fromFrame('stone');
-	    asteroid.anchor.x = 0.5;
-	    asteroid.anchor.y = 0.5;
+    for(var i=0;i<asteroidCount;i++){
+        var asteroid = PIXI.Sprite.fromFrame('stone');
+        asteroid.anchor.x = 0.5;
+        asteroid.anchor.y = 0.5;
 
-	    asteroid.asteroidX = centerX; 
-	    asteroid.asteroidY = centerY; 
-	    asteroid.asteroidZ = maxZ; 
-	    asteroid.asteroidScale = 0.35;
+        asteroid.asteroidX = centerX; 
+        asteroid.asteroidY = centerY; 
+        asteroid.asteroidZ = maxZ; 
+        asteroid.asteroidScale = 0.35;
+        asteroid.offsetx = 0;
+        asteroid.offsety = 0;
 
-	    starContainer.addChild(asteroid);
-	    asteroids.push(asteroid);
-    }
+        starContainer.addChild(asteroid);
+        asteroids.push(asteroid);
+}
 
-    createLaser();
-    starContainer.addChild(laser);
+createLaser();
+starContainer.addChild(laser);
 
-	update();
+    update();
 
 });
 
@@ -137,103 +154,137 @@ loader.load();
 
 function update() {
 
-	var joystick = pollGamepad();
+    var joystick = pollGamepad();
 
-	updateStars(joystick);
-	updateAsteroids();
+    updateStars(joystick);
+    updateAsteroids(joystick);
+    updateUfos();
 
-	if((fire == true) || (joystick[2])) {
-		laser.visible = true;	
-	} else {
-		laser.visible = false;
-	}
+    if((fire == true) || (joystick[2])) {
+    	laser.visible = true;	
+    } else {
+    	laser.visible = false;
+    }
 
-	speedText.text = 'Hastighet: ' + speed;
-	pointsText.text = 'Poäng: ' + points;
+    speedText.text = 'Hastighet: ' + speed;
+    pointsText.text = 'Poäng: ' + points;
 
-	renderer.render(stage);
-	requestAnimationFrame(update);
+    renderer.render(stage);
+    requestAnimationFrame(update);
 
 }
 
 function createLaser() {
 	laser = new PIXI.Container();
-    laser.x = 0;
-    laser.y = 20;
+	laser.x = 0;
+	laser.y = 20;
 
-    laser1 = PIXI.Sprite.fromFrame('laser');
-    laser1.x = centerX + 10;
-    laser1.y = centerY;
-    laser1.rotation = -0.3;
+	laser1 = PIXI.Sprite.fromFrame('laser');
+	laser1.x = centerX + 10;
+	laser1.y = centerY;
+	laser1.rotation = -0.3;
 
-    laser2 = PIXI.Sprite.fromFrame('laser');
-    laser2.x = centerX - 10;
-    laser2.y = centerY;
-    laser2.rotation = 0.3;
+	laser2 = PIXI.Sprite.fromFrame('laser');
+	laser2.x = centerX - 10;
+	laser2.y = centerY;
+	laser2.rotation = 0.3;
 
-    laser.addChild(laser1);
-    laser.addChild(laser2);
+	laser.addChild(laser1);
+	laser.addChild(laser2);
 }
 
-function updateAsteroids() {
+function updateAsteroids(joystick) {
 	for(var index in asteroids) {
-	    var asteroid = asteroids[index];
-	    var asteroidScale = 1 - asteroid.asteroidZ / maxZ;
+		var asteroid = asteroids[index];
+		var asteroidScale = 1 - asteroid.asteroidZ / maxZ;
 
-	     asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
-	     asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
-	     asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
-	     asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
+		asteroid.x = centerX + (asteroid.asteroidX / asteroid.asteroidZ) * perspective;
+		asteroid.y = centerY + (asteroid.asteroidY / asteroid.asteroidZ) * perspective;
+		asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
+		asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
-	     asteroid.rotation += 0.1; 
+		if((fire == true) && 
+			(asteroid.x < centerX + 30) &&
+			(asteroid.x > centerX - 30) &&
+			(asteroid.y < centerY + 30) &&
+			(asteroid.y > centerY - 30)) {
+                  //  points += 1;
+              asteroid.visible = false;
+              console.log('BOOM');
+          }
 
-	      if(asteroid.asteroidZ < 0) {
-	           points += 1;
-	           asteroid.asteroidZ = maxZ;
-	           // asteroid.asteroidX =  -width / 2 + Math.random()*width ;
-	           // asteroid.asteroidY =  -height / 2 + Math.random()*height;
-	           asteroid.asteroidX = Math.random()*width/7 * (Math.round(Math.random()) * 2 - 1);
-	           asteroid.asteroidY = Math.random()*height/7 * (Math.round(Math.random()) * 2 - 1);
-	    }
+          asteroid.rotation += 0.1; 
+
+          if(asteroid.asteroidZ < 0) {
+          	asteroid.asteroidZ = maxZ;
+                // asteroid.asteroidX =  -width / 2 + Math.random()*width ;
+                // asteroid.asteroidY =  -height / 2 + Math.random()*height;
+                asteroid.asteroidX = Math.random()*width/7 * (Math.round(Math.random()) * 2 - 1);
+                asteroid.asteroidY = Math.random()*height/7 * (Math.round(Math.random()) * 2 - 1);
+                asteroid.visible = true;
+            }
+        }
     }
+
+function updateUfos() {
+	for(var index in ufos) {
+		var ufo = ufos[index];
+		ufo.x -= ufoSpeed;
+
+		if(ufo.x < -( ufo.width + 50)) {
+			ufo.x = width + 100;
+			ufo.visible = true; // Please comeback after hit!
+		}
+
+        if((fire == true) && 
+            (ufo.x < centerX + 30) &&
+            (ufo.x > centerX - 30) &&
+            (ufo.y < centerY + 30) &&
+            (ufo.y > centerY - 30)) {
+                points += 1;
+                ufo.visible = false;
+                console.log('BOOM');
+        }
+
+	}
 }
 
 function updateStars(joystick) {
 
-	for(var index in stars) {
-		var star = stars[index];
+    for(var index in stars) {
+            var star = stars[index];
 
-		// räkna ut ett skalvärde baserat på hur långt bort stjärnan är
-		var starScale = 1 - star.starZ / maxZ;
+            // räkna ut ett skalvärde baserat på hur långt bort stjärnan är
+            var starScale = 1 - star.starZ / maxZ;
 
-		if(resetMove == true) {
-			star.offsetx = star.offsety = starFieldRoll = 0;
-			starContainer.rotation = 0;
-			points = 0;
-			speed = 50;
-		}
+            if(resetMove == true) {
+                    star.offsetx = star.offsety = starFieldRoll = 0;
+                    starContainer.rotation = 0;
+                    points = 0;
+                    speed = 50;
+            }
 
-		if(hyper == true) {
-		    perspective -= 0.08;
-		} else {
-		    perspective = 3000;
-		}
-		
-       // 	if(moveX) {
-	//	    star.age = Date.now();
-         //       }
-                star.age++;
-		star.offsetx += joystick[0] * move_speed;
-		star.offsetx += moveX * move_speed;
-		star.offsetx = Math.min(maxMove, star.offsetx);
-		star.offsetx = Math.max(-maxMove, star.offsetx);
+            if(hyper == true) {
+                perspective -= 0.08;
+            } else {
+                perspective = 3000;
+            }
+            
+    // 	if(moveX) {
+    //	    star.age = Date.now();
+        //       }
+            star.age++;
+            star.offsetx += joystick[0] * move_speed;
+            star.offsetx += moveX * move_speed;
+            star.offsetx = Math.min(maxMove, star.offsetx);
+            star.offsetx = Math.max(-maxMove, star.offsetx);
 
-		star.offsety += joystick[1] * move_speed;
-		star.offsety += moveY * move_speed;
-		star.offsety = Math.min(maxMove, star.offsety);
-		star.offsety = Math.max(-maxMove, star.offsety);
+            star.offsety += joystick[1] * move_speed;
+            star.offsety += moveY * move_speed;
+            star.offsety = Math.min(maxMove, star.offsety);
+            star.offsety = Math.max(-maxMove, star.offsety);
 
-		// Onödigt komplicerat, gör om gör rätt
+            // Onödigt komplicerat, gör om gör rätt
 //		if((star.age !=0) && (Date.now() - star.age) > 500) {
 //		if(star.age > 100) {
 //		    star.offsetx += 10;
