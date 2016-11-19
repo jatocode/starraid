@@ -95,10 +95,17 @@ loader.add('star','img/star.png')
     initControl();
     createPlanets();
 
+    // var fireFrame = new PIXI.Graphics();
+    // fireFrame.lineStyle(2, 0xff0000);
+    // fireFrame.drawRect(centerX - 30, centerY - 30, 60, 60);
+    // starContainer.addChild(fireFrame);
+
     for(var i=0;i<ufoCount;i++) {
 	    var ufo = new PIXI.Sprite.fromFrame('ufogrå1');
 	    ufo.x = width + 100;
 	    ufo.y = height/2;
+	    ufo.anchor.x = ufo.anchor.y = 0.5;
+	    ufo.hit = false;
 	    ufo.scale.x = ufo.scale.y = 1 / 10;    	
 	    starContainer.addChild(ufo);
 	    ufos.push(ufo);
@@ -138,6 +145,7 @@ loader.add('star','img/star.png')
         asteroid.asteroidScale = 0.35;
         asteroid.offsetx = 0;
         asteroid.offsety = 0;
+        asteroid.hit = false;
 
         starContainer.addChild(asteroid);
         asteroids.push(asteroid);
@@ -203,13 +211,12 @@ function updateAsteroids(joystick) {
 		asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
 		asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
-		if((fire == true) && 
-			(asteroid.x < centerX + 30) &&
-			(asteroid.x > centerX - 30) &&
-			(asteroid.y < centerY + 30) &&
-			(asteroid.y > centerY - 30)) {
+		if((fire == true) && (asteroid.hit == false) &&
+            (asteroid.x > centerX - 30) && (asteroid.x < centerX + 30) &&
+            (asteroid.y > centerY - 30) && (asteroid.y < centerY + 30)) {
                   //  points += 1;
               asteroid.visible = false;
+              asteroid.hit = true;
               console.log('BOOM');
           }
 
@@ -222,6 +229,7 @@ function updateAsteroids(joystick) {
                 asteroid.asteroidX = Math.random()*width/7 * (Math.round(Math.random()) * 2 - 1);
                 asteroid.asteroidY = Math.random()*height/7 * (Math.round(Math.random()) * 2 - 1);
                 asteroid.visible = true;
+                asteroid.hit = false;
             }
         }
     }
@@ -234,16 +242,15 @@ function updateUfos() {
 		if(ufo.x < -( ufo.width + 50)) {
 			ufo.x = width + 100;
 			ufo.visible = true; // Please comeback after hit!
+			ufo.hit = false;
 		}
 
-        if((fire == true) && 
-            (ufo.x < centerX + 30) &&
-            (ufo.x > centerX - 30) &&
-            (ufo.y < centerY + 30) &&
-            (ufo.y > centerY - 30)) {
+        if((fire == true) && (!ufo.hit) &&
+            (ufo.x > centerX - 30) && (ufo.x < centerX + 30) &&
+            (ufo.y > centerY - 30) && (ufo.y < centerY + 30)) {
                 points += 1;
                 ufo.visible = false;
-                console.log('BOOM');
+                ufo.hit = true;
         }
 
 	}
