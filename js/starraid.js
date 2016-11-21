@@ -100,6 +100,7 @@ loader.add('star','img/star.png')
 	stage.addChild(titleText);
 	stage.addChild(speedText);
 	stage.addChild(pointsText);
+	stage.addChild(levelText);
 
     initControl();
     createPlanets();
@@ -188,13 +189,12 @@ function update() {
 
     speedText.text = 'Hastighet: ' + speed;
     pointsText.text = 'Poäng: ' + points;
+    levelText.text = 'LEVEL: ' + level;
 
     renderer.render(stage);
- //   if(reduceAnimation++ % 2 == 0) {
-    	requestAnimationFrame(update);
- //   } else {
- //       update();
- //   }
+    
+    requestAnimationFrame(update);
+
 
 }
 
@@ -229,36 +229,38 @@ function updateAsteroids(joystick) {
 
 		if(((fire) || (joystick[2])) && 
 			(asteroid.hit == false) &&
-            (asteroid.x > centerX - hitSize) && (asteroid.x < centerX + hitSize) &&
-            (asteroid.y > centerY - hitSize) && (asteroid.y < centerY + hitSize)) {
-                  //  points += 1;
-              asteroid.visible = false;
-              asteroid.hit = true;
-              console.log('BOOM');
-          }
+			(asteroid.x > centerX - hitSize) && (asteroid.x < centerX + hitSize) &&
+			(asteroid.y > centerY - hitSize) && (asteroid.y < centerY + hitSize)) {
+				asteroid.visible = false;
+				asteroid.hit = true;
+				console.log('BOOM');
+		}
 
-          asteroid.rotation += 0.1; 
+		asteroid.rotation += 0.1; 
 
-          if(asteroid.asteroidZ < 0) {
-          	asteroid.asteroidZ = maxZ;
-                // asteroid.asteroidX =  -width / 2 + Math.random()*width ;
-                // asteroid.asteroidY =  -height / 2 + Math.random()*height;
-                asteroid.asteroidX = Math.random()*width/7 * (Math.round(Math.random()) * 2 - 1);
-                asteroid.asteroidY = Math.random()*height/7 * (Math.round(Math.random()) * 2 - 1);
-                asteroid.visible = true;
-                asteroid.hit = false;
-            }
-        }
-    }
+		if(asteroid.asteroidZ < 0) {
+			asteroid.asteroidZ = maxZ;
+	                // asteroid.asteroidX =  -width / 2 + Math.random()*width ;
+	                // asteroid.asteroidY =  -height / 2 + Math.random()*height;
+	                asteroid.asteroidX = Math.random()*width/7 * (Math.round(Math.random()) * 2 - 1);
+	                asteroid.asteroidY = Math.random()*height/7 * (Math.round(Math.random()) * 2 - 1);
+	                asteroid.visible = true;
+	                asteroid.hit = false;
+		}
+	}
+}
 
 function updateUfos(joystick) {
 	for(var index in ufos) {
 		var ufo = ufos[index];
-		ufo.x -= ufoSpeed;
+
+		ufoMovement(ufo);
+		ufo.y += joystick[1] * move_speed;
 
 		if(ufo.x < -( ufo.width + 50)) {
 			ufo.x = width + 100;
-			ufo.visible = true; // Please comeback after hit!
+			ufo.y = height/2;
+			ufo.visible = true;
 			ufo.hit = false;
 		}
 
@@ -275,78 +277,87 @@ function updateUfos(joystick) {
 
 }
 
-checklevel(points) {
-	if(points == 5) {
-		ufoSpeed *= 1.5;
-	} else if(points == 10) {
-		ufoSpeed *= 1.5;
-	} else if(points == 15) {
-		ufoSpeed *= 1.5;
+function ufoMovement(ufo) {
+	switch (level) {
+		case 1:
+			ufo.x -= ufoSpeed;
+			break;
+		case 2:
+			ufo.x -= ufoSpeed;
+			ufo.y -= 0.5;
+			break;
+		case 3: 
+			ufo.x -= ufoSpeed;
+			ufo.y -= Math.sin(ufo.x) * 20;
+			break;
+		default:
+			ufo.x -= 2;
+			ufo.y -= 2;
+			break;
+	}
+}
+
+function checklevel(points) {
+	if(points == 2) {
+		level = 2;
+		ufoSpeed *= 1.2;
+	} else if(points == 4) {
+		level = 3;
+		ufoSpeed *= 1.2;
+	} else if(points == 6) {
+		level = 4;
 	}
 }
 
 function updateStars(joystick) {
 
     for(var index in stars) {
-            var star = stars[index];
+	    var star = stars[index];
 
-            // räkna ut ett skalvärde baserat på hur långt bort stjärnan är
-            var starScale = 1 - star.starZ / maxZ;
+	    // räkna ut ett skalvärde baserat på hur långt bort stjärnan är
+	    var starScale = 1 - star.starZ / maxZ;
 
-            if(starScale > 0.0) { // Optimize for the poor poor raspberry
-	            if(resetMove == true) {
-	                    star.offsetx = star.offsety = starFieldRoll = 0;
-	                    starContainer.rotation = 0;
-	                    points = 0;
-	                    speed = 50;
-	            }
+	    if(resetMove == true) {
+	        star.offsetx = star.offsety = starFieldRoll = 0;
+	        starContainer.rotation = 0;
+	        points = 0;
+	        speed = 50;
+	        level = 1;
+	    }
 
-	            if(hyper == true) {
-	             perspective -= 0.08;
-	            } else {
-	                perspective = 3000;
-	            }
-	            
-	    // 	if(moveX) {
-	    //	    star.age = Date.now();
-	        //       }
-	            star.age++;
-	            star.offsetx -= joystick[0] * move_speed;
-	            star.offsetx += moveX * move_speed;
-	            star.offsetx = Math.min(maxMove, star.offsetx);
-	            star.offsetx = Math.max(-maxMove, star.offsetx);
+	    if(hyper == true) {
+	    	perspective -= 0.08;
+	    } else {
+	        perspective = 3000;
+	    }
 
-	            star.offsety += joystick[1] * move_speed;
-	            star.offsety += moveY * move_speed;
-	            star.offsety = Math.min(maxMove, star.offsety);
-	            star.offsety = Math.max(-maxMove, star.offsety);
+	    star.age++;
+	    star.offsetx -= joystick[0] * move_speed;
+	    star.offsetx += moveX * move_speed;
+	    star.offsetx = Math.min(maxMove, star.offsetx);
+	    star.offsetx = Math.max(-maxMove, star.offsetx);
 
-	            // Onödigt komplicerat, gör om gör rätt
-	//		if((star.age !=0) && (Date.now() - star.age) > 500) {
-	//		if(star.age > 100) {
-	//		    star.offsetx += 10;
-	//		    star.offsetx = Math.min(0, star.offsetx);
-	//		    if(star.offsetx == 0) star.age = 0;
-	//		} 
-			
-			var roll_speed = 0.15/perspective;
-			if(roll != 0) {
-			    starFieldRoll += roll * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
-			    starContainer.rotation = starFieldRoll;
-			} 
+	    star.offsety += joystick[1] * move_speed;
+	    star.offsety += moveY * move_speed;
+	    star.offsety = Math.min(maxMove, star.offsety);
+	    star.offsety = Math.max(-maxMove, star.offsety);
+		
+		var roll_speed = 0.15/perspective;
+		if(roll != 0) {
+		    starFieldRoll += roll * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+		    starContainer.rotation = starFieldRoll;
+		} 
 
-			// Här är hela den magiska 3d-projektionsrutinen
-			// dela x och y med z och gångra med perspektiv
-			// samt utgå från en mittpunkt
-			star.x = centerX + star.offsetx + (star.starX / star.starZ) * perspective;
-			star.y = centerY + star.offsety + (star.starY / star.starZ) * perspective;
+		// Här är hela den magiska 3d-projektionsrutinen
+		// dela x och y med z och gångra med perspektiv
+		// samt utgå från en mittpunkt
+		star.x = centerX + star.offsetx + (star.starX / star.starZ) * perspective;
+		star.y = centerY + star.offsety + (star.starY / star.starZ) * perspective;
 
-			// kör skalan i kubik för att inte stjärnorna långt bort ska bli
-			// för stora
-			star.scale.x = star.scale.y = starScale*starScale*star.starScale;
-			star.alpha = starScale;
-
-		}
+		// kör skalan i kubik för att inte stjärnorna långt bort ska bli
+		// för stora
+		star.scale.x = star.scale.y = starScale*starScale*star.starScale;
+		star.alpha = starScale;
 
 		star.starZ -= speed;
 
@@ -405,6 +416,11 @@ function initTexts() {
 	pointsText = new PIXI.Text('Poäng: ' + points, infoStyle); 
 	pointsText.x = 10;
 	pointsText.y = height - pointsText.height;
+
+	levelText= new PIXI.Text('LEVEL: ' + level, infoStyle); 
+	levelText.anchor.x = 0.5;
+	levelText.x = width/2;
+	levelText.y = height - 2*levelText.height;
 
 	titleText = new PIXI.Text('Olles Planetfärd', style);
 	titleText.anchor.x = 0.5;
