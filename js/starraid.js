@@ -22,7 +22,7 @@ renderer.backgroundColor = 0x000020;
 var stage = new PIXI.Container();
 
 var stars = [];
-var starCount = 500;
+var starCount = 1400;
 
 var asteroids = [];
 var asteroidCount = 1;
@@ -30,6 +30,8 @@ var asteroidCount = 1;
 var ufos = [];
 var ufoCount = 1;
 var ufoSpeed = 6;
+
+var level = 1;
 
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
 // MaxZ är hur långt bort stjärnorna kan vara som mest
@@ -57,6 +59,11 @@ var starFieldRoll = 0;
 var loader = PIXI.loader;
 
 var starContainer = new PIXI.Container();
+var faststarContainer = new PIXI.ParticleContainer(5000, {scale:true, alpha:true});
+faststarContainer.pivot.x = width/2;
+faststarContainer.pivot.y = height/2;
+faststarContainer.x = width/2;
+faststarContainer.y = height/2;
 starContainer.pivot.x = width/2;
 starContainer.pivot.y = height/2;
 starContainer.x = width/2;
@@ -131,9 +138,10 @@ loader.add('star','img/star.png')
 
 		star.starScale = 0.2 + Math.random()*0.2;
 
-		starContainer.addChild(star);
+		faststarContainer.addChild(star);
 		stars.push(star);
 	}
+	starContainer.addChild(faststarContainer);
 
 	// Asteroids
     for(var i=0;i<asteroidCount;i++){
@@ -149,7 +157,7 @@ loader.add('star','img/star.png')
         asteroid.offsety = 0;
         asteroid.hit = false;
 
- //       starContainer.addChild(asteroid);
+        starContainer.addChild(asteroid);
         asteroids.push(asteroid);
 	}
 
@@ -162,12 +170,14 @@ loader.add('star','img/star.png')
 
 loader.load();
 
+var reduceAnimation = 0;
+
 function update() {
 
     var joystick = pollGamepad();
 
     updateStars(joystick);
-//    updateAsteroids(joystick);
+    updateAsteroids(joystick);
     updateUfos(joystick);
 
     if((fire == true) || (joystick[2])) {
@@ -180,7 +190,11 @@ function update() {
     pointsText.text = 'Poäng: ' + points;
 
     renderer.render(stage);
-    requestAnimationFrame(update);
+ //   if(reduceAnimation++ % 2 == 0) {
+    	requestAnimationFrame(update);
+ //   } else {
+ //       update();
+ //   }
 
 }
 
@@ -253,18 +267,22 @@ function updateUfos(joystick) {
             (ufo.x > centerX - hitSize) && (ufo.x < centerX + hitSize) &&
             (ufo.y > centerY - hitSize) && (ufo.y < centerY + hitSize)) {
                 points += 1;
-            	if(points == 5) {
-            		ufoSpeed *= 1.5;
-            	} else if(points == 10) {
-            		ufoSpeed *= 1.5;
-            	} else if(points == 15) {
-            		ufoSpeed *= 1.5;
-            	}
+        		checklevel(points);
                 ufo.visible = false;
                 ufo.hit = true;
         }
 	}
 
+}
+
+checklevel(points) {
+	if(points == 5) {
+		ufoSpeed *= 1.5;
+	} else if(points == 10) {
+		ufoSpeed *= 1.5;
+	} else if(points == 15) {
+		ufoSpeed *= 1.5;
+	}
 }
 
 function updateStars(joystick) {
@@ -275,57 +293,60 @@ function updateStars(joystick) {
             // räkna ut ett skalvärde baserat på hur långt bort stjärnan är
             var starScale = 1 - star.starZ / maxZ;
 
-            if(resetMove == true) {
-                    star.offsetx = star.offsety = starFieldRoll = 0;
-                    starContainer.rotation = 0;
-                    points = 0;
-                    speed = 50;
-            }
+            if(starScale > 0.0) { // Optimize for the poor poor raspberry
+	            if(resetMove == true) {
+	                    star.offsetx = star.offsety = starFieldRoll = 0;
+	                    starContainer.rotation = 0;
+	                    points = 0;
+	                    speed = 50;
+	            }
 
-            if(hyper == true) {
-                perspective -= 0.08;
-            } else {
-                perspective = 3000;
-            }
-            
-    // 	if(moveX) {
-    //	    star.age = Date.now();
-        //       }
-            star.age++;
-            star.offsetx += joystick[0] * move_speed;
-            star.offsetx += moveX * move_speed;
-            star.offsetx = Math.min(maxMove, star.offsetx);
-            star.offsetx = Math.max(-maxMove, star.offsetx);
+	            if(hyper == true) {
+	             perspective -= 0.08;
+	            } else {
+	                perspective = 3000;
+	            }
+	            
+	    // 	if(moveX) {
+	    //	    star.age = Date.now();
+	        //       }
+	            star.age++;
+	            star.offsetx -= joystick[0] * move_speed;
+	            star.offsetx += moveX * move_speed;
+	            star.offsetx = Math.min(maxMove, star.offsetx);
+	            star.offsetx = Math.max(-maxMove, star.offsetx);
 
-            star.offsety += joystick[1] * move_speed;
-            star.offsety += moveY * move_speed;
-            star.offsety = Math.min(maxMove, star.offsety);
-            star.offsety = Math.max(-maxMove, star.offsety);
+	            star.offsety += joystick[1] * move_speed;
+	            star.offsety += moveY * move_speed;
+	            star.offsety = Math.min(maxMove, star.offsety);
+	            star.offsety = Math.max(-maxMove, star.offsety);
 
-            // Onödigt komplicerat, gör om gör rätt
-//		if((star.age !=0) && (Date.now() - star.age) > 500) {
-//		if(star.age > 100) {
-//		    star.offsetx += 10;
-//		    star.offsetx = Math.min(0, star.offsetx);
-//		    if(star.offsetx == 0) star.age = 0;
-//		} 
-		
-		var roll_speed = 0.15/perspective;
-		if(roll != 0) {
-		    starFieldRoll += roll * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
-		    starContainer.rotation = starFieldRoll;
-		} 
+	            // Onödigt komplicerat, gör om gör rätt
+	//		if((star.age !=0) && (Date.now() - star.age) > 500) {
+	//		if(star.age > 100) {
+	//		    star.offsetx += 10;
+	//		    star.offsetx = Math.min(0, star.offsetx);
+	//		    if(star.offsetx == 0) star.age = 0;
+	//		} 
+			
+			var roll_speed = 0.15/perspective;
+			if(roll != 0) {
+			    starFieldRoll += roll * roll_speed; //0.0001; //= Math.min(2*3.14, starFieldRoll + 0.1);
+			    starContainer.rotation = starFieldRoll;
+			} 
 
-		// Här är hela den magiska 3d-projektionsrutinen
-		// dela x och y med z och gångra med perspektiv
-		// samt utgå från en mittpunkt
-		star.x = centerX + star.offsetx + (star.starX / star.starZ) * perspective;
-		star.y = centerY + star.offsety + (star.starY / star.starZ) * perspective;
+			// Här är hela den magiska 3d-projektionsrutinen
+			// dela x och y med z och gångra med perspektiv
+			// samt utgå från en mittpunkt
+			star.x = centerX + star.offsetx + (star.starX / star.starZ) * perspective;
+			star.y = centerY + star.offsety + (star.starY / star.starZ) * perspective;
 
-		// kör skalan i kubik för att inte stjärnorna långt bort ska bli
-		// för stora
-		star.scale.x = star.scale.y = starScale*starScale*star.starScale;
-		star.alpha = starScale;
+			// kör skalan i kubik för att inte stjärnorna långt bort ska bli
+			// för stora
+			star.scale.x = star.scale.y = starScale*starScale*star.starScale;
+			star.alpha = starScale;
+
+		}
 
 		star.starZ -= speed;
 
@@ -390,7 +411,14 @@ function initTexts() {
 	titleText.x = width/2;
 	titleText.y = 0;
 
-	var infoText = new PIXI.Text('Piltangenter = Styr         A/D = roll       W/S = hastighet       Space = fire     Enter = reset', {fontFamily:'courier', fontSize: '10px', fill:'#ffffff'});
+	var rendertype = "";
+	if(renderer instanceof PIXI.CanvasRenderer) { 
+		rendertype = "canvas";   //canvas renderer
+	} else {    //webgltype renderer
+		rendertype = "webgl";
+	}
+
+	var infoText = new PIXI.Text('Piltangenter = Styr         A/D = roll       W/S = hastighet       Space = fire     Enter = reset  (' + rendertype +')', {fontFamily:'courier', fontSize: '10px', fill:'#ffffff'});
 	infoText.anchor.x = 0.5;
 	infoText.x = width/2;
 	infoText.y = height - 20;
