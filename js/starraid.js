@@ -17,7 +17,7 @@ console.log('Width: ' + width + ' Height: ' + height);
 var renderer = PIXI.autoDetectRenderer(width,height,{
     view: canvas
 });
-renderer.backgroundColor = 0x000020;
+renderer.backgroundColor = 0x202040;
 
 var stage = new PIXI.Container();
 
@@ -60,7 +60,7 @@ var starFieldRoll = 0;
 var loader = PIXI.loader;
 
 var starContainer = new PIXI.Container();
-var faststarContainer = new PIXI.ParticleContainer(5000, {scale:true, alpha:true});
+var faststarContainer = new PIXI.ParticleContainer(2000, {scale:true, alpha:true});
 faststarContainer.pivot.x = width/2;
 faststarContainer.pivot.y = height/2;
 faststarContainer.x = width/2;
@@ -194,12 +194,39 @@ function update() {
     speedText.text = 'Hastighet: ' + speed;
     pointsText.text = 'Poäng: ' + points;
     levelText.text = 'LEVEL: ' + level;
-    missesText.text = 'Misses: ' + misses;
+    missesText.text = 'Missar: ' + misses;
 
     renderer.render(stage);
 
     requestAnimationFrame(update);
 
+
+}
+
+function gameover() {
+    var infoStyle = {
+        fontFamily : 'courier',
+        fontSize : '70px',
+        fill : '#F7EDCA',
+        stroke : '#4a1850',
+        strokeThickness : 5,
+        dropShadow : true,
+        dropShadowColor : '#303030',
+        dropShadowAngle : Math.PI / 6,
+        dropShadowDistance : 6,
+    };
+    var gameovertext = new PIXI.Text("GAME OVER", infoStyle);
+    gameovertext.anchor.x = gameovertext.anchor.y = 0.5;
+    gameovertext.x = width/2;
+    gameovertext.y = height/2;
+    gameovertext.z = +100;
+    stage.addChild(gameovertext);
+
+    // Stop UFOS
+
+    // Stop laser
+
+    // Starta om knapp
 
 }
 
@@ -281,6 +308,10 @@ function updateUfos(joystick) {
             checklevel(points);
             ufo.visible = false;
             ufo.hit = true;
+        }
+
+        if(misses >= 5) {
+            gameover();
         }
     }
 
@@ -432,7 +463,7 @@ function initTexts() {
     levelText.x = width/2;
     levelText.y = height - 2*levelText.height;
 
-    missesText = new PIXI.Text('Misses: ' + misses, infoStyle); 
+    missesText = new PIXI.Text('Missar: ' + misses, infoStyle); 
     missesText.anchor.x = 0.5;
     missesText.x = width/2;
     missesText.y = height - 2*missesText.height;
