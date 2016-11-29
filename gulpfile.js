@@ -17,12 +17,10 @@ gulp.task('deploy', function() {
 		recursive: true,
 		clean: true,
 		exclude: ['.AppleDouble', '.DS_Store'],
+		hostname: 'hallonpaj.local',
+    	username : 'pi',
+    	destination: '/var/www/html',
 	};
 
-	rsyncConf.hostname = 'hallonpaj.local'; // hostname
-    rsyncConf.username = 'pi'; // ssh username
-    rsyncConf.destination = '/var/www/html'; // path where uploaded files go
-
-    // Use gulp-rsync to sync the files 
-  return gulp.src(rsyncPaths).pipe(rsync(rsyncConf));
+	return gulp.src(rsyncPaths).pipe(rsync(rsyncConf));
 });
