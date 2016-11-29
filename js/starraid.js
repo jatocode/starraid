@@ -49,7 +49,8 @@ var maxZ = 5000;
 var START_SPEED = 50;
 var speed = START_SPEED;
 var asteroidSpeed = speed * 2;
-var move_speed = 12;
+var keys_move_speed = 7;
+var joystick_move_speed = 12;
 var maxMove = 500;
 
 var points = 0;
@@ -337,8 +338,8 @@ function updateUfos(joystick) {
         var ufo = ufos[index];
 
         ufoMovement(ufo);
-        ufo.y += joystick[1] * move_speed;
-        ufo.y += moveY * move_speed;
+        ufo.y += joystick[1] * joystick_move_speed;
+        ufo.y += moveY * keys_move_speed;
 
         if(ufo.x < -( ufo.width + 50)) {
             ufo.x = width + 100;
@@ -433,13 +434,13 @@ function updateStars(joystick) {
         }
 
         star.age++;
-        star.offsetx -= joystick[0] * move_speed;
-        star.offsetx += moveX * move_speed;
+        star.offsetx -= joystick[0] * joystick_move_speed;
+        star.offsetx += moveX * keys_move_speed;
         star.offsetx = Math.min(maxMove, star.offsetx);
         star.offsetx = Math.max(-maxMove, star.offsetx);
 
-        star.offsety += joystick[1] * move_speed;
-        star.offsety += moveY * move_speed;
+        star.offsety += joystick[1] * joystick_move_speed;
+        star.offsety += moveY * keys_move_speed;
         star.offsety = Math.min(maxMove, star.offsety);
         star.offsety = Math.max(-maxMove, star.offsety);
 
