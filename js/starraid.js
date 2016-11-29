@@ -54,7 +54,7 @@ var joystick_move_speed = 12;
 var maxMove = 500;
 
 var points = 0;
-var highscore = 0;
+var highscore = localStorage.highscore == undefined?0:localStorage.highscore;
 
 var moveX = 0;
 var moveY = 0;
@@ -402,6 +402,7 @@ function checklevel(points) {
 
     if(points > highscore) {
         highscore = points;
+        localStorage.highscore = highscore;
     }
 }
 
