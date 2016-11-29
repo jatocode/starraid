@@ -16,6 +16,7 @@ gulp.task('deploy', function() {
 		emptyDirectories: true,
 		recursive: true,
 		clean: true,
+		silent: true,
 		exclude: ['.AppleDouble', '.DS_Store'],
 		hostname: 'hallonpaj.local',
     	username : 'pi',
