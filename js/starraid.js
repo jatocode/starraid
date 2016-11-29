@@ -29,7 +29,8 @@ var asteroidCount = 1;
 
 var ufos = [];
 var ufoCount = 1;
-var ufoSpeed = 6;
+var START_UFOSPEED = 6;
+var ufoSpeed = START_UFOSPEED;
 
 var level = 1;
 var misses = 0;
@@ -45,11 +46,14 @@ var MENU = 2;
 var perspective = 3000;
 var maxZ = 5000;
 
-var speed = 50;
+var START_SPEED = 50;
+var speed = START_SPEED;
 var asteroidSpeed = speed * 2;
-var points = 0;
-var move_speed = 8;
+var move_speed = 12;
 var maxMove = 500;
+
+var points = 0;
+var highscore = 0;
 
 var moveX = 0;
 var moveY = 0;
@@ -83,7 +87,9 @@ graphics.drawRect(width/2 - 50, height/2 -25, 100, 50);
 var titleText;
 var speedText;
 var pointsText;
+var highscoreText;
 var missesText;
+var maxMisses = 5;
 
 var laser;
 
@@ -107,6 +113,7 @@ loader.add('star','img/star.png')
     stage.addChild(titleText);
     stage.addChild(speedText);
     stage.addChild(pointsText);
+    stage.addChild(highscoreText);
 //    stage.addChild(levelText);
     stage.addChild(missesText);
 
@@ -191,7 +198,7 @@ function update() {
         joystick = pollGamepad();
         updateUfos(joystick);
 
-        if((fire == true) || (joystick[2])) {
+        if( checkFire(joystick) ) {
             laser.visible = true;	
         } else {
             laser.visible = false;
@@ -212,6 +219,7 @@ function update() {
     pointsText.text = 'Poäng: ' + points;
     levelText.text = 'LEVEL: ' + level;
     missesText.text = 'Missar: ' + misses;
+    highscoreText.text = 'Highscore: ' + highscore;
 
     renderer.render(stage);
 
@@ -220,7 +228,7 @@ function update() {
 }
 
 function gameover() {
-    var infoStyle = {
+    var style = {
         fontFamily : 'courier',
         fontSize : '70px',
         fill : '#F7EDCA',
@@ -231,18 +239,40 @@ function gameover() {
         dropShadowAngle : Math.PI / 6,
         dropShadowDistance : 6,
     };
-    var gameovertext = new PIXI.Text("GAME OVER", infoStyle);
+
+    var gameovertext = new PIXI.Text("GAME OVER", style);
     gameovertext.anchor.x = gameovertext.anchor.y = 0.5;
     gameovertext.x = width/2;
     gameovertext.y = height/2;
     gameovertext.z = +100;
     stage.addChild(gameovertext);
 
+    style.fontSize = '30px';
+
+    var restarttext = new PIXI.Text("Skjut för att prova igen", style);
+    restarttext.anchor.x = restarttext.anchor.y = 0.5;
+    restarttext.x = width/2;
+    restarttext.y = height/2 + gameovertext.height + 10;
+    restarttext.z = +100;
+    stage.addChild(restarttext);
     // Stop UFOS
     // Stop laser
     mode = GAMEOVER;
 
     // Starta om knapp
+    (function waitForFire () {
+        setTimeout(function () {
+            var s = checkFire(pollGamepad());
+            if (!s) {         
+                waitForFire(); 
+            } else {
+                stage.removeChild(restarttext);
+                stage.removeChild(gameovertext);
+                mode = PLAY;
+                restart();
+            }
+        }, 100);
+    })();
 
 }
 
@@ -275,7 +305,7 @@ function updateAsteroids(joystick) {
         asteroid.scale.x = asteroid.scale.y = asteroidScale*asteroidScale*asteroid.asteroidScale;
         asteroid.asteroidZ -= Math.random()*asteroidSpeed*1.5;
 
-        if(((fire) || (joystick[2])) && 
+        if(checkFire(joystick) && 
                 (asteroid.hit == false) &&
                 (asteroid.x > centerX - hitSize) && (asteroid.x < centerX + hitSize) &&
                 (asteroid.y > centerY - hitSize) && (asteroid.y < centerY + hitSize)) {
@@ -298,6 +328,10 @@ function updateAsteroids(joystick) {
     }
 }
 
+function checkFire(joystick) {
+    return ( (fire == true) || (joystick[2]) )
+}
+
 function updateUfos(joystick) {
     for(var index in ufos) {
         var ufo = ufos[index];
@@ -316,7 +350,7 @@ function updateUfos(joystick) {
             ufo.hit = false;
         }
 
-        if(((fire == true) || (joystick[2])) &&
+        if(checkFire(joystick) &&
                 (!ufo.hit) &&
                 (ufo.x > centerX - hitSize) && (ufo.x < centerX + hitSize) &&
                 (ufo.y > centerY - hitSize) && (ufo.y < centerY + hitSize)) {
@@ -326,7 +360,7 @@ function updateUfos(joystick) {
             ufo.hit = true;
         }
 
-        if(misses >= 5) {
+        if(misses >= maxMisses) {
             gameover();
         }
     }
@@ -364,6 +398,19 @@ function checklevel(points) {
         level = 4;
         ufoSpeed = 6;
     }
+
+    if(points > highscore) {
+        highscore = points;
+    }
+}
+
+function restart() {
+    starContainer.rotation = 0;
+    points = 0;
+    speed = START_SPEED;
+    ufoSpeed = START_UFOSPEED;
+    level = 1;    
+    misses = 0;
 }
 
 function updateStars(joystick) {
@@ -376,10 +423,7 @@ function updateStars(joystick) {
 
         if(resetMove == true) {
             star.offsetx = star.offsety = starFieldRoll = 0;
-            starContainer.rotation = 0;
-            points = 0;
-            speed = 50;
-            level = 1;
+            restart();
         }
 
         if(hyper == true) {
@@ -473,6 +517,10 @@ function initTexts() {
     pointsText = new PIXI.Text('Poäng: ' + points, infoStyle); 
     pointsText.x = 10;
     pointsText.y = height - pointsText.height;
+
+    highscoreText = new PIXI.Text('Highscore: ' + highscore, infoStyle); 
+    highscoreText.x = width - highscoreText.width - 10;
+    highscoreText.y = height - highscoreText.height;
 
     levelText= new PIXI.Text('LEVEL: ' + level, infoStyle); 
     levelText.anchor.x = 0.5;
