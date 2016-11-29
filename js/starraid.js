@@ -34,6 +34,11 @@ var ufoSpeed = 6;
 var level = 1;
 var misses = 0;
 
+var mode = 0;
+var PLAY = 0;
+var GAMEOVER = 1;
+var MENU = 2;
+
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
 // MaxZ är hur långt bort stjärnorna kan vara som mest
 // Används även för att räkna ut skalning och alpha
@@ -179,17 +184,29 @@ var reduceAnimation = 0;
 
 function update() {
 
-    var joystick = pollGamepad();
+    var joystick = [0,0,0];
 
+    switch(mode) {
+    case PLAY:
+        joystick = pollGamepad();
+        updateUfos(joystick);
+
+        if((fire == true) || (joystick[2])) {
+            laser.visible = true;	
+        } else {
+            laser.visible = false;
+        }
+        break;
+    case GAMEOVER:
+        break;
+    case MENU:
+        break;
+    default:
+        break;
+    }
+    
     updateStars(joystick);
     updateAsteroids(joystick);
-    updateUfos(joystick);
-
-    if((fire == true) || (joystick[2])) {
-        laser.visible = true;	
-    } else {
-        laser.visible = false;
-    }
 
     speedText.text = 'Hastighet: ' + speed;
     pointsText.text = 'Poäng: ' + points;
@@ -199,7 +216,6 @@ function update() {
     renderer.render(stage);
 
     requestAnimationFrame(update);
-
 
 }
 
@@ -223,8 +239,8 @@ function gameover() {
     stage.addChild(gameovertext);
 
     // Stop UFOS
-
     // Stop laser
+    mode = GAMEOVER;
 
     // Starta om knapp
 
@@ -481,45 +497,45 @@ function initTexts() {
     }
 
     var infoText = new PIXI.Text('Piltangenter = Styr         A/D = roll       W/S = hastighet       Space = fire     Enter = reset  (' + rendertype +')', {fontFamily:'courier', fontSize: '10px', fill:'#ffffff'});
-            infoText.anchor.x = 0.5;
-            infoText.x = width/2;
-            infoText.y = height - 20;
-            stage.addChild(infoText);
-            }
+    infoText.anchor.x = 0.5;
+    infoText.x = width/2;
+    infoText.y = height - 20;
+    stage.addChild(infoText);
+}
 
-            function pollGamepad() {
-                var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
-                if (!gamepads) {
-                    console.log('No joystick connected');
-                    return [0,0];
-                }
+function pollGamepad() {
+    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
+    if (!gamepads) {
+        console.log('No joystick connected');
+        return [0,0,0];
+    }
 
-                var gp = gamepads[0];
+    var gp = gamepads[0];
 
-                if(!gp) {
-                    return [0,0];
-                }
-                if (buttonPressed(gp.buttons[0])) {
-                    console.log('button 0');
-                } else if (buttonPressed(gp.buttons[2])) {
-                    console.log('button 2');
-                }
-                if (buttonPressed(gp.buttons[1])) {
-                    console.log('button 1');
-                } else if (buttonPressed(gp.buttons[3])) {
-                    console.log('button 3');
-                }
+    if(!gp) {
+        return [0,0,0];
+    }
+    if (buttonPressed(gp.buttons[0])) {
+        console.log('button 0');
+    } else if (buttonPressed(gp.buttons[2])) {
+        console.log('button 2');
+    }
+    if (buttonPressed(gp.buttons[1])) {
+        console.log('button 1');
+    } else if (buttonPressed(gp.buttons[3])) {
+        console.log('button 3');
+    }
 
-                var button = buttonPressed(gp.buttons[0]) || 
-                    buttonPressed(gp.buttons[1]) ||
-                    buttonPressed(gp.buttons[2]) ||
-                    buttonPressed(gp.buttons[3]);
+    var button = buttonPressed(gp.buttons[0]) || 
+        buttonPressed(gp.buttons[1]) ||
+        buttonPressed(gp.buttons[2]) ||
+        buttonPressed(gp.buttons[3]);
 
-                var x = Math.floor(gp.axes[0]);
-                var y = Math.floor(gp.axes[1]);
+    var x = Math.floor(gp.axes[0]);
+    var y = Math.floor(gp.axes[1]);
 
-                return [x,y, button];
-            }
+    return [x,y, button];
+}
 
 function initControl() {
 
