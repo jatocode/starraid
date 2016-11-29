@@ -1,5 +1,5 @@
 *.AppleDouble
-*.DS_store
-.DS_store
+*.DS_Store
+.DS_Store
 *.sublime*
 node_modules/

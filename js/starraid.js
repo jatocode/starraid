@@ -32,6 +32,7 @@ var ufoCount = 1;
 var ufoSpeed = 6;
 
 var level = 1;
+var misses = 0;
 
 // Perspektivet bestämmer typ vilken brännvidd "kameran" har
 // MaxZ är hur långt bort stjärnorna kan vara som mest
@@ -77,6 +78,7 @@ graphics.drawRect(width/2 - 50, height/2 -25, 100, 50);
 var titleText;
 var speedText;
 var pointsText;
+var missesText;
 
 var laser;
 
@@ -100,7 +102,8 @@ loader.add('star','img/star.png')
     stage.addChild(titleText);
     stage.addChild(speedText);
     stage.addChild(pointsText);
-    stage.addChild(levelText);
+//    stage.addChild(levelText);
+    stage.addChild(missesText);
 
     initControl();
     createPlanets();
@@ -114,6 +117,7 @@ loader.add('star','img/star.png')
         var ufo = new PIXI.Sprite.fromFrame('ufogrå1');
         ufo.x = width + 100;
         ufo.y = height/2;
+        ufo.startY = height/2;
         ufo.anchor.x = ufo.anchor.y = 0.5;
         ufo.hit = false;
         ufo.scale.x = ufo.scale.y = 1 / 10;    	
@@ -190,6 +194,7 @@ function update() {
     speedText.text = 'Hastighet: ' + speed;
     pointsText.text = 'Poäng: ' + points;
     levelText.text = 'LEVEL: ' + level;
+    missesText.text = 'Misses: ' + misses;
 
     renderer.render(stage);
 
@@ -256,11 +261,15 @@ function updateUfos(joystick) {
 
         ufoMovement(ufo);
         ufo.y += joystick[1] * move_speed;
+        ufo.y += moveY * move_speed;
 
         if(ufo.x < -( ufo.width + 50)) {
             ufo.x = width + 100;
-            ufo.y = height/2;
+            ufo.y = ufo.startY;
             ufo.visible = true;
+            if(!ufo.hit) {
+                misses++;
+            }
             ufo.hit = false;
         }
 
@@ -288,11 +297,11 @@ function ufoMovement(ufo) {
             break;
         case 3: 
             ufo.x -= ufoSpeed;
-            ufo.y -= Math.sin(ufo.x) * 20;
+            ufo.startY = height/3;
             break;
         default:
-            ufo.x -= 2;
-            ufo.y -= 2;
+            ufo.x -= ufoSpeed;
+            ufo.startY = Math.random() * height;
             break;
     }
 }
@@ -306,6 +315,7 @@ function checklevel(points) {
         ufoSpeed *= 1.2;
     } else if(points == 6) {
         level = 4;
+        ufoSpeed = 6;
     }
 }
 
@@ -421,6 +431,11 @@ function initTexts() {
     levelText.anchor.x = 0.5;
     levelText.x = width/2;
     levelText.y = height - 2*levelText.height;
+
+    missesText = new PIXI.Text('Misses: ' + misses, infoStyle); 
+    missesText.anchor.x = 0.5;
+    missesText.x = width/2;
+    missesText.y = height - 2*missesText.height;
 
     titleText = new PIXI.Text('Olles Planetfärd', style);
     titleText.anchor.x = 0.5;
