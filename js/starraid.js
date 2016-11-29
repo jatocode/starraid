@@ -312,7 +312,6 @@ function updateAsteroids(joystick) {
                 (asteroid.y > centerY - hitSize) && (asteroid.y < centerY + hitSize)) {
             asteroid.visible = false;
             asteroid.hit = true;
-            console.log('BOOM');
         }
 
         asteroid.rotation += 0.1; 
