@@ -110,6 +110,7 @@ loader.add('star','img/star.png')
 .add('karlavagnen', 'img/karlavagnen.png')
 .add('ufogrå1', 'img/ufo-grå1.png')
 .add('pil', 'img/pil2.png')
+.add('fire', 'img/red-button.png')
 .once('complete',function () {
 
     stage.addChild(titleText);
@@ -183,7 +184,9 @@ loader.add('star','img/star.png')
     createLaser();
     stage.addChild(laser);
 
-    initTouchControls();
+    if ('ontouchstart' in window) {
+        initTouchControls();
+    }
     update();
 
 });
@@ -494,8 +497,8 @@ function createPlanets() {
 
 function initTouchControls() {
     var controls = new PIXI.Container();
-    controls.x = width-100;
-    controls.y = height-100;
+    controls.x = width-120;
+    controls.y = height-120;
     var pilv = PIXI.Sprite.fromFrame('pil');
     var pilh = PIXI.Sprite.fromFrame('pil');
     var pilu = PIXI.Sprite.fromFrame('pil');
@@ -505,24 +508,57 @@ function initTouchControls() {
     pilu.anchor.x = pilu.anchor.y = 0.5;
     piln.anchor.x = piln.anchor.y = 0.5;
 
-    pilv.scale.x = pilv.scale.y = 0.1;
-    pilh.scale.x = pilh.scale.y = 0.1;
-    pilu.scale.x = pilu.scale.y = 0.1;
-    piln.scale.x = piln.scale.y = 0.1;
+    pilv.scale.x = pilv.scale.y = 0.2;
+    pilh.scale.x = pilh.scale.y = 0.2;
+    pilu.scale.x = pilu.scale.y = 0.2;
+    piln.scale.x = piln.scale.y = 0.2;
     pilh.rotation = Math.PI;
     pilu.rotation = Math.PI/2;
     piln.rotation = -Math.PI/2;
 
-    pilv.x = -30;
-    pilh.x = 30;
-    pilu.y = -30;
-    piln.y = 30;
+    pilv.x = -60;
+    pilh.x = 60;
+    pilu.y = -60;
+    piln.y = 60;
+
+    pilu.interactive = piln.interactive = pilv.interactive = pilh.interactive = true;
+    pilu.mousedown = function(mouseData) { moveY = -1; }
+    pilu.mouseup = function(mouseData) { moveY = 0; }     
+    pilu.touchstart = function(touchData) { moveY = -1 }
+    pilu.touchend = function(touchData) { moveY = 0; }
+
+    piln.mousedown = function(mouseData) { moveY = 1; }
+    piln.mouseup = function(mouseData) { moveY = 0; }     
+    piln.touchstart = function(touchData) { moveY = 1; }
+    piln.touchend = function(touchData) { moveY = 0; }
+
+    pilv.mousedown = function(mouseData) { moveX = -1; }
+    pilv.mouseup = function(mouseData) { moveX = 0; }     
+    pilv.touchstart = function(touchData) { moveX = -1; }
+    pilv.touchend = function(touchData) { moveX = 0; }
+
+    pilh.mousedown = function(mouseData) { moveX = 1; }
+    pilh.mouseup = function(mouseData) { moveX = 0; }     
+    pilh.touchstart = function(touchData) { moveX = 1; }
+    pilh.touchend = function(touchData) { moveX = 0; }
 
     controls.addChild(pilv);
     controls.addChild(pilh);
     controls.addChild(pilu);
     controls.addChild(piln);
     stage.addChild(controls);
+
+    var firebutton = PIXI.Sprite.fromFrame('fire');
+    firebutton.scale.x = firebutton.scale.y = 0.2;
+    firebutton.x = 40;
+    firebutton.y = height-200;
+    firebutton.interactive = true;
+    firebutton.mousedown = function(mouseData) { fire = true; }
+    firebutton.mouseup = function(mouseData) { fire = false; }     
+    firebutton.touchstart = function(touchData) { fire = true; }
+    firebutton.touchend = function(touchData) { fire = false; }
+       
+    stage.addChild(firebutton);
 }
 
 function initTexts() {
