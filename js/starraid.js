@@ -109,6 +109,7 @@ loader.add('star','img/star.png')
 .add('jupiter', 'img/jupiter.png')
 .add('karlavagnen', 'img/karlavagnen.png')
 .add('ufogrå1', 'img/ufo-grå1.png')
+.add('pil', 'img/pil2.png')
 .once('complete',function () {
 
     stage.addChild(titleText);
@@ -182,6 +183,7 @@ loader.add('star','img/star.png')
     createLaser();
     stage.addChild(laser);
 
+    initTouchControls();
     update();
 
 });
@@ -412,6 +414,14 @@ function restart() {
     ufoSpeed = START_UFOSPEED;
     level = 1;    
     misses = 0;
+
+    for(var i=0;i<starCount;i++){
+        var star = stars[i];
+        star.offsetx = 0;
+        star.offsety = 0;
+        star.roll = 0;
+        star.age = 0;
+    }
 }
 
 function updateStars(joystick) {
@@ -480,6 +490,39 @@ function createPlanets() {
         img.scale.x = img.scale.y = 0.15;
         starContainer.addChild(img);
     }
+}
+
+function initTouchControls() {
+    var controls = new PIXI.Container();
+    controls.x = width-100;
+    controls.y = height-100;
+    var pilv = PIXI.Sprite.fromFrame('pil');
+    var pilh = PIXI.Sprite.fromFrame('pil');
+    var pilu = PIXI.Sprite.fromFrame('pil');
+    var piln = PIXI.Sprite.fromFrame('pil');
+    pilv.anchor.x = pilv.anchor.y = 0.5;
+    pilh.anchor.x = pilh.anchor.y = 0.5;
+    pilu.anchor.x = pilu.anchor.y = 0.5;
+    piln.anchor.x = piln.anchor.y = 0.5;
+
+    pilv.scale.x = pilv.scale.y = 0.1;
+    pilh.scale.x = pilh.scale.y = 0.1;
+    pilu.scale.x = pilu.scale.y = 0.1;
+    piln.scale.x = piln.scale.y = 0.1;
+    pilh.rotation = Math.PI;
+    pilu.rotation = Math.PI/2;
+    piln.rotation = -Math.PI/2;
+
+    pilv.x = -30;
+    pilh.x = 30;
+    pilu.y = -30;
+    piln.y = 30;
+
+    controls.addChild(pilv);
+    controls.addChild(pilh);
+    controls.addChild(pilu);
+    controls.addChild(piln);
+    stage.addChild(controls);
 }
 
 function initTexts() {
